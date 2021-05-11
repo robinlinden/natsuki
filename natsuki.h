@@ -3,10 +3,9 @@
 
 #include <asio.hpp>
 
-#include <array>
 #include <atomic>
-#include <cstring>
 #include <iostream>
+#include <istream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -28,24 +27,27 @@ public:
         asio::connect(socket, endpoints, ec);
         if (ec) { throw std::runtime_error(ec.message()); }
 
+        asio::streambuf buf;
         while (running_.load()) {
             using namespace std::literals;
 
-            std::array<char, 512> buf;
+            asio::read_until(socket, buf, "\r\n", ec);
 
-            size_t len = socket.read_some(asio::buffer(buf), ec);
             if (ec == asio::error::eof) {
                 break;
             } else if (ec) {
                 throw std::runtime_error(ec.message());
             }
 
-            std::cout.write(buf.data(), len);
+            std::istream is{&buf};
+            std::string data;
+            is >> data;
+            std::cout << data << std::endl;
 
-            if (len >= 6 && std::memcmp(buf.data(), "INFO", 4) == 0) {
+            if (data.starts_with("INFO")) {
                 auto connect{"CONNECT {\"verbose\":true,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
                 asio::write(socket, asio::buffer(connect));
-            } else if (len == 6 && std::memcmp(buf.data(), "PING\r\n", 6) == 0) {
+            } else if (data.starts_with("PING")) {
                 asio::write(socket, asio::buffer("PONG\r\n"sv));
             }
         }
