@@ -5,9 +5,11 @@
 
 #include <array>
 #include <atomic>
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace natsuki {
 
@@ -27,6 +29,8 @@ public:
         if (ec) { throw std::runtime_error(ec.message()); }
 
         while (running_.load()) {
+            using namespace std::literals;
+
             std::array<char, 512> buf;
 
             size_t len = socket.read_some(asio::buffer(buf), ec);
@@ -37,6 +41,13 @@ public:
             }
 
             std::cout.write(buf.data(), len);
+
+            if (len >= 6 && std::memcmp(buf.data(), "INFO", 4) == 0) {
+                auto connect{"CONNECT {\"verbose\":true,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
+                asio::write(socket, asio::buffer(connect));
+            } else if (len == 6 && std::memcmp(buf.data(), "PING\r\n", 6) == 0) {
+                asio::write(socket, asio::buffer("PONG\r\n"sv));
+            }
         }
     }
 
