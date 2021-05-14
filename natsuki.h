@@ -3,7 +3,7 @@
 
 #include <asio.hpp>
 
-#include <atomic>
+#include <functional>
 #include <iostream>
 #include <istream>
 #include <stdexcept>
@@ -23,46 +23,50 @@ public:
         auto endpoints = resolver.resolve(address_, "4222", ec);
         if (ec) { throw std::runtime_error(ec.message()); }
 
-        asio::ip::tcp::socket socket{io_service_};
-        asio::connect(socket, endpoints, ec);
+        asio::connect(socket_, endpoints, ec);
         if (ec) { throw std::runtime_error(ec.message()); }
 
-        asio::streambuf buf;
-        while (running_.load()) {
-            using namespace std::literals;
+        asio::async_read_until(socket_, buf_, "\r\n",
+                std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
 
-            asio::read_until(socket, buf, "\r\n", ec);
-
-            if (ec == asio::error::eof) {
-                break;
-            } else if (ec) {
-                throw std::runtime_error(ec.message());
-            }
-
-            std::istream is{&buf};
-            std::string data;
-            is >> data;
-            std::cout << data << std::endl;
-
-            if (data.starts_with("INFO")) {
-                auto connect{"CONNECT {\"verbose\":true,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
-                asio::write(socket, asio::buffer(connect));
-            } else if (data.starts_with("PING")) {
-                asio::write(socket, asio::buffer("PONG\r\n"sv));
-            } else {
-                std::cerr << "Unhandled message: " << data << " (" << data.size() << ")\n";
-            }
-        }
+        io_service_.run();
     }
 
     void shutdown() {
-        running_ = false;
+        io_service_.stop();
     }
 
 private:
+    void on_read(asio::error_code const &ec, [[maybe_unused]] std::size_t bytes_transferred) {
+        using namespace std::literals;
+        if (ec == asio::error::eof) {
+            shutdown();
+        } else if (ec) {
+            throw std::runtime_error(ec.message());
+        }
+
+        std::istream is{&buf_};
+        std::string data;
+        is >> data;
+        std::cout << data << std::endl;
+
+        if (data.starts_with("INFO")) {
+            auto connect{"CONNECT {\"verbose\":true,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
+            asio::write(socket_, asio::buffer(connect));
+        } else if (data.starts_with("PING")) {
+            asio::write(socket_, asio::buffer("PONG\r\n"sv));
+        } else {
+            std::cerr << "Unhandled message: " << data << " (" << data.size() << ")\n";
+        }
+
+        asio::async_read_until(socket_, buf_, "\r\n",
+                std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
+    }
+
     asio::io_service io_service_{};
+    asio::ip::tcp::socket socket_{io_service_};
+    asio::streambuf buf_{};
     std::string address_{};
-    std::atomic<bool> running_{true};
 };
 
 } // namespace natsuki
