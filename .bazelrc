@@ -1,0 +1,62 @@
+# Build configuration
+# =========================================================
+
+build:debug -c dbg
+build:release -c opt
+
+# Compiler configuration
+# =========================================================
+
+build:gnulike --cxxopt='-std=c++2a'
+build:gnulike --copt='-Wall'
+build:gnulike --copt='-Wextra'
+build:gnulike --copt='-pedantic-errors'
+build:gnulike --copt='-Werror'
+build:gnulike --copt='-Wdouble-promotion'
+build:gnulike --copt='-Wformat=2'
+build:gnulike --copt='-Wmissing-declarations'
+build:gnulike --copt='-Wnull-dereference'
+build:gnulike --copt='-Wshadow'
+build:gnulike --copt='-Wsign-compare'
+build:gnulike --copt='-Wundef'
+build:gnulike --copt='-fno-common'
+build:gnulike --copt='-Wno-missing-field-initializers' # Common idiom for zeroing members.
+build:gnulike --cxxopt='-Wnon-virtual-dtor'
+build:gnulike --cxxopt='-Woverloaded-virtual'
+build:gnulike --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
+build:gnulike --per_file_copt='external/asio[:/]@-Wno-sign-compare'
+build:gnulike --per_file_copt='external/asio[:/]@-Wno-undef'
+build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
+build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
+build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-unused-parameter'
+
+build:msvc --copt='/std:c++latest'
+build:msvc --copt='/W4' # More warnings.
+build:msvc --copt='/WX' # Treat warnings as errors.
+build:msvc --copt='/permissive-' # Conform to the standard.
+build:msvc --per_file_copt='external/boringssl[:/]@/wd4100' # C4100: 'bio': unreferenced formal parameter
+build:msvc --per_file_copt='external/boringssl[:/]@/wd4127' # C4127: conditional expression is constant
+build:msvc --per_file_copt='external/boringssl[:/]@/wd4244' # C4244: '=': conversion from 'SOCKET' to 'int', possible loss of data
+build:msvc --per_file_copt='external/boringssl[:/]@/wd4267' # C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+build:msvc --per_file_copt='external/boringssl[:/]@/wd4706' # C4706: assignment within conditional expression
+
+# Special build options
+# =========================================================
+
+# Some of this is from "Can I run AddressSanitizer with more aggressive diagnostics enabled?"
+# on https://github.com/google/sanitizers/wiki/AddressSanitizer#faq and some is from
+# https://chromium.googlesource.com/external/github.com/grpc/grpc/+/4e9206f48c91e17f43856b016b12f59dd5118293/tools/bazel.rc
+build:asan --strip=never
+build:asan --copt=-fsanitize=address
+build:asan --copt=-fsanitize-address-use-after-scope
+build:asan --copt=-fno-omit-frame-pointer
+build:asan --linkopt=-fsanitize=address
+build:asan --action_env=ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
+build:asan --action_env=LSAN_OPTIONS=report_objects=1
+
+# Misc configuration
+# =========================================================
+
+test --test_output=errors
+
+try-import %workspace%/.bazelrc.local

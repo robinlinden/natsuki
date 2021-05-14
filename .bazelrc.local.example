@@ -1,0 +1,14 @@
+# Developer-specific configuration
+#
+# Copy this to .bazelrc.local and adjust.
+
+# Choose a build type, or don't, for the "fastbuild" build type.
+# build --config debug
+# build --config release
+
+# Choose a compiler.
+build --config gnulike # gcc/clang
+# build --config msvc
+
+# Other interesting build options.
+# build --config asan
