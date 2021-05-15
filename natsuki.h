@@ -21,7 +21,7 @@ public:
     void run() {
         asio::error_code ec;
 
-        asio::ip::tcp::resolver resolver{io_service_};
+        asio::ip::tcp::resolver resolver{io_context_};
         auto endpoints = resolver.resolve(address_, "4222", ec);
         if (ec) { throw std::runtime_error(ec.message()); }
 
@@ -31,11 +31,11 @@ public:
         asio::async_read_until(socket_, buf_, "\r\n",
                 std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
 
-        io_service_.run();
+        io_context_.run();
     }
 
     void shutdown() {
-        io_service_.stop();
+        io_context_.stop();
     }
 
     void publish(
@@ -49,7 +49,7 @@ public:
         }
 
         ss << payload.size() << "\r\n" << payload << "\r\n";
-        asio::post(io_service_, [this, msg = ss.str()] {
+        asio::post(io_context_, [this, msg = ss.str()] {
             asio::write(socket_, asio::buffer(msg));
         });
     }
@@ -84,8 +84,8 @@ private:
                 std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
     }
 
-    asio::io_service io_service_{};
-    asio::ip::tcp::socket socket_{io_service_};
+    asio::io_context io_context_{};
+    asio::ip::tcp::socket socket_{io_context_};
     asio::streambuf buf_{};
     std::string address_{};
 };
