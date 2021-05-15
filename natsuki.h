@@ -3,6 +3,7 @@
 
 #include <asio.hpp>
 
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <istream>
@@ -37,7 +38,7 @@ public:
     }
 
 private:
-    void on_read(asio::error_code const &ec, [[maybe_unused]] std::size_t bytes_transferred) {
+    void on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
         using namespace std::literals;
         if (ec == asio::error::eof) {
             shutdown();
@@ -45,9 +46,10 @@ private:
             throw std::runtime_error(ec.message());
         }
 
-        std::istream is{&buf_};
-        std::string data;
-        is >> data;
+        std::string data{
+                asio::buffers_begin(buf_.data()),
+                asio::buffers_begin(buf_.data()) + bytes_transferred - std::strlen("\r\n")};
+        buf_.consume(bytes_transferred);
         std::cout << data << std::endl;
 
         if (data.starts_with("INFO")) {
