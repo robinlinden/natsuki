@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <istream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -35,6 +36,22 @@ public:
 
     void shutdown() {
         io_service_.stop();
+    }
+
+    void publish(
+            std::string_view subject,
+            std::string_view payload,
+            std::optional<std::string_view> reply_to = std::nullopt) {
+        std::stringstream ss;
+        ss << "PUB " << subject << " ";
+        if (reply_to) {
+            ss << *reply_to << " ";
+        }
+
+        ss << payload.size() << "\r\n" << payload << "\r\n";
+        asio::post(io_service_, [this, msg = ss.str()] {
+            asio::write(socket_, asio::buffer(msg));
+        });
     }
 
 private:

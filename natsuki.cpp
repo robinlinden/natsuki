@@ -8,6 +8,8 @@
 int main(int argc, char **argv) try {
     natsuki::Nats nats{argc >= 2 ? argv[1] : "localhost"};
     std::thread nats_thread{&natsuki::Nats::run, &nats};
+    nats.publish("natsuki.running", "true");
+    nats.publish("natsuki.ping", "", "natsuki.pong");
     std::this_thread::sleep_for(std::chrono::seconds(5));
     nats.shutdown();
     nats_thread.join();
