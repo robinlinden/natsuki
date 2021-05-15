@@ -57,6 +57,8 @@ private:
             asio::write(socket_, asio::buffer(connect));
         } else if (data.starts_with("PING")) {
             asio::write(socket_, asio::buffer("PONG\r\n"sv));
+        } else if (data.starts_with("+OK")) {
+            // This is fine.
         } else {
             std::cerr << "Unhandled message: " << data << " (" << data.size() << ")\n";
         }
