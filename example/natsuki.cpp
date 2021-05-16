@@ -1,4 +1,4 @@
-#include "natsuki.h"
+#include "natsuki/natsuki.h"
 
 #include <chrono>
 #include <iostream>
