@@ -1,0 +1,43 @@
+on: [push, pull_request]
+jobs:
+  linux-gcc:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: CC=gcc-10 CXX=g++-10 bazel build ... --config gcc
+
+  linux-clang:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang
+
+  linux-clang-asan:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang --config asan
+
+  windows-msvc:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: bazel build ... --config msvc
+
+  buildifier:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install
+      run: |
+          wget https://github.com/bazelbuild/buildtools/releases/download/3.5.0/buildifier
+          sudo chmod +x buildifier
+    - name: Check
+      run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)

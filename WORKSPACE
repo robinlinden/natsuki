@@ -7,10 +7,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "asio",  # BSL-1.0
     build_file = "//third_party:asio.BUILD",
+    patch_cmds = ["sed -i '238 a inline' include/asio/impl/use_awaitable.hpp"],
     sha256 = "4af9875df5497fdd507231f4b7346e17d96fc06fe10fd30e2b3750715a329113",
     strip_prefix = "asio-1.18.1",
     urls = ["https://downloads.sourceforge.net/project/asio/asio/1.18.1%20(Stable)/asio-1.18.1.tar.bz2"],
-    patch_cmds = ["sed -i '238 a inline' include/asio/impl/use_awaitable.hpp"],
 )
 
 http_archive(
