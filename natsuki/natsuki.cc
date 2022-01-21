@@ -27,8 +27,7 @@ void Nats::run() {
     asio::connect(socket_, endpoints, ec);
     if (ec) { throw std::runtime_error(ec.message()); }
 
-    asio::async_read_until(socket_, buf_, "\r\n",
-            std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
+    asio::async_read_until(socket_, buf_, "\r\n", std::bind_front(&Nats::on_read, this));
 
     io_context_.run();
 }
@@ -103,8 +102,7 @@ void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
         std::cerr << "Unhandled message: " << data << " (" << data.size() << ")\n";
     }
 
-    asio::async_read_until(socket_, buf_, "\r\n",
-            std::bind(&Nats::on_read, this, std::placeholders::_1, std::placeholders::_2));
+    asio::async_read_until(socket_, buf_, "\r\n", std::bind_front(&Nats::on_read, this));
 }
 
 } // namespace natsuki
