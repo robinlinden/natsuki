@@ -25,6 +25,8 @@ build:gnulike --cxxopt='-Wnon-virtual-dtor'
 build:gnulike --cxxopt='-Woverloaded-virtual'
 
 build:gnulike --per_file_copt='example@-Wno-undef' # asio leaks this into our code.
+build:gnulike --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
+
 build:gnulike --per_file_copt='external/asio[:/]@-Wno-sign-compare'
 build:gnulike --per_file_copt='external/asio[:/]@-Wno-undef'
 build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
@@ -35,6 +37,7 @@ build:gcc --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
 
 build:clang --config=gnulike
 build:clang --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
+build:clang --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
 build:msvc --copt='/std:c++latest'
 build:msvc --copt='/W4' # More warnings.
