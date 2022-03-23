@@ -41,3 +41,11 @@ jobs:
           sudo chmod +x buildifier
     - name: Check
       run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
+
+  linux-cmake:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
+    - run: cmake -S . -B build
+    - run: cmake --build build
