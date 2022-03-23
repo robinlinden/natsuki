@@ -3,21 +3,21 @@ jobs:
   linux-gcc:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: CC=gcc-10 CXX=g++-10 bazel build ... --config gcc
 
   linux-clang:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang
 
   linux-clang-asan:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang --config asan
 
@@ -27,14 +27,14 @@ jobs:
       run:
         shell: bash
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build
       run: bazel build ... --config msvc
 
   buildifier:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install
       run: |
           wget https://github.com/bazelbuild/buildtools/releases/download/3.5.0/buildifier
@@ -45,7 +45,7 @@ jobs:
   linux-cmake:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
     - run: cmake -S . -B build
     - run: cmake --build build
