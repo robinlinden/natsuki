@@ -47,5 +47,5 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
-    - run: cmake -S . -B build
+    - run: cmake -Wdev -Werror=dev -S . -B build
     - run: cmake --build build
