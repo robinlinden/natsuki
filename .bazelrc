@@ -4,50 +4,54 @@
 build:debug -c dbg
 build:release -c opt
 
+# Bazel configuration
+# =========================================================
+
+build --enable_platform_specific_config
+test --test_output=errors
+
 # Compiler configuration
 # =========================================================
 
-build:gnulike --cxxopt='-std=c++2a'
-build:gnulike --copt='-Wall'
-build:gnulike --copt='-Wextra'
-build:gnulike --copt='-pedantic-errors'
-build:gnulike --copt='-Werror'
-build:gnulike --copt='-Wdouble-promotion'
-build:gnulike --copt='-Wformat=2'
-build:gnulike --copt='-Wmissing-declarations'
-build:gnulike --copt='-Wnull-dereference'
-build:gnulike --copt='-Wshadow'
-build:gnulike --copt='-Wsign-compare'
-build:gnulike --copt='-Wundef'
-build:gnulike --copt='-fno-common'
-build:gnulike --copt='-Wno-missing-field-initializers' # Common idiom for zeroing members.
-build:gnulike --cxxopt='-Wnon-virtual-dtor'
-build:gnulike --cxxopt='-Woverloaded-virtual'
+build:linux --cxxopt='-std=c++2a'
+build:linux --copt='-Wall'
+build:linux --copt='-Wextra'
+build:linux --copt='-pedantic-errors'
+build:linux --copt='-Werror'
+build:linux --copt='-Wdouble-promotion'
+build:linux --copt='-Wformat=2'
+build:linux --copt='-Wmissing-declarations'
+build:linux --copt='-Wnull-dereference'
+build:linux --copt='-Wshadow'
+build:linux --copt='-Wsign-compare'
+build:linux --copt='-Wundef'
+build:linux --copt='-fno-common'
+build:linux --copt='-Wno-missing-field-initializers' # Common idiom for zeroing members.
+build:linux --cxxopt='-Wnon-virtual-dtor'
+build:linux --cxxopt='-Woverloaded-virtual'
 
-build:gnulike --per_file_copt='example@-Wno-undef' # asio leaks this into our code.
-build:gnulike --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='example@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
 
-build:gnulike --per_file_copt='external/asio[:/]@-Wno-sign-compare'
-build:gnulike --per_file_copt='external/asio[:/]@-Wno-undef'
-build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
-build:gnulike --per_file_copt='external/boringssl[:/]@-Wno-unused-parameter'
+build:linux --per_file_copt='external/asio[:/]@-Wno-sign-compare'
+build:linux --per_file_copt='external/asio[:/]@-Wno-undef'
+build:linux --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
+build:linux --per_file_copt='external/boringssl[:/]@-Wno-unused-parameter'
 
-build:gcc --config=gnulike
 build:gcc --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
 
-build:clang --config=gnulike
 build:clang --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
 build:clang --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
-build:msvc --copt='/std:c++latest'
-build:msvc --copt='/W4' # More warnings.
-build:msvc --copt='/WX' # Treat warnings as errors.
-build:msvc --copt='/permissive-' # Conform to the standard.
-build:msvc --per_file_copt='external/boringssl[:/]@/wd4100' # C4100: 'bio': unreferenced formal parameter
-build:msvc --per_file_copt='external/boringssl[:/]@/wd4127' # C4127: conditional expression is constant
-build:msvc --per_file_copt='external/boringssl[:/]@/wd4244' # C4244: '=': conversion from 'SOCKET' to 'int', possible loss of data
-build:msvc --per_file_copt='external/boringssl[:/]@/wd4267' # C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-build:msvc --per_file_copt='external/boringssl[:/]@/wd4706' # C4706: assignment within conditional expression
+build:windows --copt='/std:c++latest'
+build:windows --copt='/W4' # More warnings.
+build:windows --copt='/WX' # Treat warnings as errors.
+build:windows --copt='/permissive-' # Conform to the standard.
+build:windows --per_file_copt='external/boringssl[:/]@/wd4100' # C4100: 'bio': unreferenced formal parameter
+build:windows --per_file_copt='external/boringssl[:/]@/wd4127' # C4127: conditional expression is constant
+build:windows --per_file_copt='external/boringssl[:/]@/wd4244' # C4244: '=': conversion from 'SOCKET' to 'int', possible loss of data
+build:windows --per_file_copt='external/boringssl[:/]@/wd4267' # C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+build:windows --per_file_copt='external/boringssl[:/]@/wd4706' # C4706: assignment within conditional expression
 
 # Special build options
 # =========================================================
@@ -63,9 +67,7 @@ build:asan --linkopt=-fsanitize=address
 build:asan --action_env=ASAN_OPTIONS=detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
 build:asan --action_env=LSAN_OPTIONS=report_objects=1
 
-# Misc configuration
+# User customization
 # =========================================================
-
-test --test_output=errors
 
 try-import %workspace%/.bazelrc.local

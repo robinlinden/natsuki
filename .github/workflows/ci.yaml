@@ -29,7 +29,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: bazel build ... --config msvc
+      run: bazel build ...
 
   buildifier:
     runs-on: ubuntu-20.04
