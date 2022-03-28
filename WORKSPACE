@@ -3,19 +3,17 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Third-party
 # =========================================================
 
-# Patch to fix asio 1.18.1 being broken in MSVC: https://github.com/chriskohlhoff/asio/pull/584
 http_archive(
     name = "asio",  # BSL-1.0
     build_file = "//third_party:asio.BUILD",
-    patch_cmds = ["sed -i '238 a inline' include/asio/impl/use_awaitable.hpp"],
-    sha256 = "4af9875df5497fdd507231f4b7346e17d96fc06fe10fd30e2b3750715a329113",
-    strip_prefix = "asio-1.18.1",
-    urls = ["https://downloads.sourceforge.net/project/asio/asio/1.18.1%20(Stable)/asio-1.18.1.tar.bz2"],
+    sha256 = "6874d81a863d800ee53456b1cafcdd1abf38bbbf54ecf295056b053c0d7115ce",
+    strip_prefix = "asio-1.22.1",
+    url = "https://downloads.sourceforge.net/project/asio/asio/1.22.1%20(Stable)/asio-1.22.1.tar.bz2",
 )
 
 http_archive(
     name = "boringssl",  # OpenSSL + ISC
-    sha256 = "af0e0b561629029332d832fd4a2f2fbed14206eb2f538037a746d82e5281ace8",
-    strip_prefix = "boringssl-b92ed690b31bc2df9197dca73b38aaa1a9225a40",
-    urls = ["https://github.com/google/boringssl/archive/b92ed690b31bc2df9197dca73b38aaa1a9225a40.tar.gz"],
+    sha256 = "6f2b0390dc23be79268da435b276b0ecfffd1adeaf9868d6a68860f9b9adbcb7",
+    strip_prefix = "boringssl-ae0ce154470dc7d1e3073ba8adb1ef2b669c6471",
+    url = "https://github.com/google/boringssl/archive/ae0ce154470dc7d1e3073ba8adb1ef2b669c6471.tar.gz",
 )
