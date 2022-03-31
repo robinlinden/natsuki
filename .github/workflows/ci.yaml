@@ -47,6 +47,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
+    # Test the oldest supported CMake version.
     - run: pip install cmake==3.14.4.post1 && cmake --version
+    - run: cmake -Wdev -Werror=dev -S . -B build
+    - run: cmake --build build
+    # Test the newest supported CMake version.
+    - run: rm -rf build
+    - run: pip install cmake==3.22.3 && cmake --version
     - run: cmake -Wdev -Werror=dev -S . -B build
     - run: cmake --build build
