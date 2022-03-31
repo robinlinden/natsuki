@@ -91,7 +91,7 @@ void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
 
         subscriptions_.at(sid)(payload);
     } else if (data.starts_with("INFO")) {
-        auto connect{"CONNECT {\"verbose\":true,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
+        auto connect{"CONNECT {\"verbose\":false,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
         asio::write(socket_, asio::buffer(connect));
     } else if (data.starts_with("PING")) {
         asio::write(socket_, asio::buffer("PONG\r\n"sv));
