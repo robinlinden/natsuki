@@ -75,7 +75,6 @@ void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
             asio::buffers_begin(buf_.data()),
             asio::buffers_begin(buf_.data()) + bytes_transferred - std::strlen("\r\n")};
     buf_.consume(bytes_transferred);
-    std::cout << data << std::endl;
 
     if (data.starts_with("MSG")) {
         // Parse out the subscription id.
