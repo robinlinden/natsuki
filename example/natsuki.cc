@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <thread>
+#include <utility>
 
 int main(int argc, char **argv) try {
     natsuki::Nats nats{argc >= 2 ? argv[1] : "localhost"};
@@ -17,7 +18,7 @@ int main(int argc, char **argv) try {
         std::cout << "not_running: " << data << "\n";
     });
 
-    nats.subscribe("natsuki.ping", [](std::string_view data) {
+    auto ping_sub = nats.subscribe("natsuki.ping", [](std::string_view data) {
         std::cout << "ping 1: " << data << "\n";
     });
 
@@ -26,8 +27,11 @@ int main(int argc, char **argv) try {
     });
 
     nats.publish("natsuki.running", "true");
-    nats.publish("natsuki.ping", "", "natsuki.pong");
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    nats.publish("natsuki.ping", "1", "natsuki.pong");
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    nats.unsubscribe(std::move(ping_sub)).wait();
+    nats.publish("natsuki.ping", "2");
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     nats.shutdown();
     nats_thread.join();
 } catch (std::runtime_error const &e) {

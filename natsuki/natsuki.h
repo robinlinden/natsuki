@@ -5,12 +5,22 @@
 
 #include <atomic>
 #include <functional>
+#include <future>
 #include <map>
 #include <optional>
 #include <string>
 #include <string_view>
 
 namespace natsuki {
+
+class Subscription {
+public:
+    Subscription(int id) : id_{id} {}
+    int id() const { return id_; }
+
+private:
+    int id_{};
+};
 
 class Nats {
 public:
@@ -28,7 +38,8 @@ public:
             std::string_view payload,
             std::optional<std::string_view> reply_to = std::nullopt);
 
-    void subscribe(std::string_view subject, std::function<void(std::string_view)> cb);
+    Subscription subscribe(std::string_view subject, std::function<void(std::string_view)> cb);
+    std::future<void> unsubscribe(Subscription &&);
 
 private:
     void on_read(asio::error_code const &ec, std::size_t bytes_transferred);

@@ -52,7 +52,7 @@ void Nats::publish(
     });
 }
 
-void Nats::subscribe(std::string_view subject, std::function<void(std::string_view)> cb) {
+Subscription Nats::subscribe(std::string_view subject, std::function<void(std::string_view)> cb) {
     std::stringstream ss;
     int sid = next_subscription_id_.fetch_add(1);
     ss << "SUB " << subject << " " << sid << "\r\n";
@@ -61,6 +61,23 @@ void Nats::subscribe(std::string_view subject, std::function<void(std::string_vi
         subscriptions_[sid] = cb;
         asio::write(socket_, asio::buffer(msg));
     });
+
+    return {sid};
+}
+
+std::future<void> Nats::unsubscribe(Subscription &&sid) {
+    std::stringstream ss;
+    ss << "UNSUB " << sid.id() << "\r\n";
+    std::promise<void> unsubscribed;
+    auto future = unsubscribed.get_future();
+
+    asio::post(io_context_, [this, sid, unsubscribed = std::move(unsubscribed), msg = ss.str()]() mutable {
+        subscriptions_.erase(sid.id());
+        unsubscribed.set_value();
+        asio::write(socket_, asio::buffer(msg));
+    });
+
+    return future;
 }
 
 void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
@@ -89,7 +106,9 @@ void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
             asio::buffers_begin(buf_.data()) + payload_length - std::strlen("\r\n")};
         buf_.consume(payload_length);
 
-        subscriptions_.at(sid)(payload);
+        if (subscriptions_.contains(sid)) {
+            subscriptions_.at(sid)(payload);
+        }
     } else if (data.starts_with("INFO")) {
         auto connect{"CONNECT {\"verbose\":false,\"pedantic\":true,\"name\":\"natsuki\",\"lang\":\"cpp\",\"version\":\"0.0.1\",\"protocol\":0}\r\n"sv};
         asio::write(socket_, asio::buffer(connect));
