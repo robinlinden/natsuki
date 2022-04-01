@@ -40,3 +40,18 @@ target_link_libraries(${PROJECT_NAME}_example
 target_compile_features(${PROJECT_NAME}_example
     PRIVATE cxx_std_20
 )
+
+# Bench
+add_executable(${PROJECT_NAME}_bench
+    example/bench.cc
+)
+
+target_link_libraries(${PROJECT_NAME}_bench
+    PRIVATE
+        ${PROJECT_NAME}
+        Threads::Threads
+)
+
+target_compile_features(${PROJECT_NAME}_bench
+    PRIVATE cxx_std_20
+)

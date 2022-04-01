@@ -5,3 +5,9 @@ cc_binary(
     srcs = ["natsuki.cc"],
     deps = ["//natsuki"],
 )
+
+cc_binary(
+    name = "bench",
+    srcs = ["bench.cc"],
+    deps = ["//natsuki"],
+)
