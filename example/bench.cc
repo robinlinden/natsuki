@@ -40,6 +40,7 @@ int main(int argc, char **argv) try {
     auto address = "localhost"s;
     int msgs = 1'000'000;
     int payload_size = 10;
+    auto seed = static_cast<unsigned>(std::time(nullptr));
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i] == "--msgs"sv) {
@@ -53,13 +54,33 @@ int main(int argc, char **argv) try {
             continue;
         }
 
+        if (argv[i] == "--size"sv) {
+            if (i + 1 == argc) {
+                std::cout << "Missing count after --size\n";
+                return 1;
+            }
+
+            payload_size = std::stoi(argv[i + 1]);
+            ++i;
+            continue;
+        }
+
+        if (argv[i] == "--seed"sv) {
+            if (i + 1 == argc) {
+                std::cout << "Missing count after --seed\n";
+                return 1;
+            }
+
+            seed = std::stoi(argv[i + 1]);
+            ++i;
+            continue;
+        }
+
         // Positional.
         if (i == argc - 1) {
             address = argv[i];
         }
     }
-
-    auto seed = static_cast<unsigned>(std::time(nullptr));
 
     std::cout << "Benchmarking with seed " << seed
             << " and payload size " << payload_size
