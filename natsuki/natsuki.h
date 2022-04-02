@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef NATSUKI_H_
-#define NATSUKI_H_
+#ifndef NATSUKI_NATSUKI_NATSUKI_H_
+#define NATSUKI_NATSUKI_NATSUKI_H_
 
 #include <asio.hpp>
 
