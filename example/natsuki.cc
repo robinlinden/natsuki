@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2021-2022 Robin Lindén <dev@robinlinden.eu>
+//
+// SPDX-License-Identifier: MIT
+
 #include "natsuki/natsuki.h"
 
 #include <chrono>
