@@ -3,13 +3,25 @@
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <thread>
+#include <utility>
 
 using namespace std::literals;
 
 int main(int argc, char **argv) try {
-    natsuki::Nats nats{argc >= 2 ? argv[1] : "localhost"};
+    auto address = "localhost"s;
+
+    for (int i = 1; i < argc; ++i) {
+        // Positional.
+        if (i == argc - 1) {
+            address = argv[i];
+        }
+    }
+
+    std::cout << "Benchmarking against NATS server at " << address << ".\n";
+    natsuki::Nats nats{std::move(address)};
     std::thread nats_thread{&natsuki::Nats::run, &nats};
 
     auto const start = std::chrono::high_resolution_clock::now();
