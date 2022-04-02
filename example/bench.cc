@@ -12,8 +12,20 @@ using namespace std::literals;
 
 int main(int argc, char **argv) try {
     auto address = "localhost"s;
+    int msgs = 1'000'000;
 
     for (int i = 1; i < argc; ++i) {
+        if (argv[i] == "--msgs"sv) {
+            if (i + 1 == argc) {
+                std::cout << "Missing count after --msgs\n";
+                return 1;
+            }
+
+            msgs = std::stoi(argv[i + 1]);
+            ++i;
+            continue;
+        }
+
         // Positional.
         if (i == argc - 1) {
             address = argv[i];
@@ -25,17 +37,17 @@ int main(int argc, char **argv) try {
     std::thread nats_thread{&natsuki::Nats::run, &nats};
 
     auto const start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 1'000'000; ++i) {
+    for (int i = 0; i < msgs; ++i) {
         nats.publish("bench"sv, "data"sv);
     }
     auto const end = std::chrono::high_resolution_clock::now();
-    std::cout << "Published 1'000'000 messages in "
+    std::cout << "Published " << msgs << " messages in "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
             << "ms.\n";
 
     nats.shutdown();
     nats_thread.join();
-} catch (std::runtime_error const &e) {
+} catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
 }
