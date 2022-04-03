@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <stdexcept>
@@ -95,9 +96,11 @@ int main(int argc, char **argv) try {
         nats.publish("bench"sv, payload);
     }
     auto const end = std::chrono::high_resolution_clock::now();
-    std::cout << "Published " << msgs << " messages in "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-            << "ms.\n";
+    auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    auto const msgs_per_second = static_cast<float>(msgs) / duration.count() * 1000; // msgs/ms -> msgs/s
+    std::cout << std::fixed << std::setprecision(0)
+            << "Published " << msgs << " messages in "
+            << duration.count() << "ms. (" << msgs_per_second << " msgs/s)\n";
 
     nats.shutdown();
     nats_thread.join();
