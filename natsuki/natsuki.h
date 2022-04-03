@@ -8,6 +8,7 @@
 #include <asio.hpp>
 
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <future>
 #include <map>
@@ -28,7 +29,8 @@ private:
 
 class Nats {
 public:
-    explicit Nats(std::string address) : address_{std::move(address)} {}
+    explicit Nats(std::string address, std::uint16_t port = 4222)
+            : address_{std::move(address)}, port_{port} {}
 
     // Run the internal asio io context. Will return only once the io context
     // has been stopped.
@@ -52,6 +54,7 @@ private:
     asio::ip::tcp::socket socket_{io_context_};
     asio::streambuf buf_{};
     std::string address_{};
+    std::uint16_t port_{};
     std::atomic<int> next_subscription_id_{};
     std::map<int, std::function<void(std::string_view)>> subscriptions_{};
 };

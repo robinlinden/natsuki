@@ -18,14 +18,23 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <system_error>
+#include <vector>
 
 namespace natsuki {
 
 void Nats::run() {
+    std::vector<char> port(10, '\0');
+
+    if (auto [ptr, ec] = std::to_chars(port.data(), port.data() + port.size() - 1, port_);
+            ec != std::errc{}) {
+        throw std::runtime_error(std::make_error_code(ec).message());
+    }
+
     asio::error_code ec;
 
     asio::ip::tcp::resolver resolver{io_context_};
-    auto endpoints = resolver.resolve(address_, "4222", ec);
+    auto endpoints = resolver.resolve(address_, std::string_view(port.data()), ec);
     if (ec) { throw std::runtime_error(ec.message()); }
 
     asio::connect(socket_, endpoints, ec);
