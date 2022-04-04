@@ -99,7 +99,7 @@ int main(int argc, char **argv) try {
 
     std::cout << "Benchmarking with seed " << seed
             << " and payload size " << payload_size
-            << " against NATS server at " << address << ".\n";
+            << "B against NATS server at " << address << ".\n";
 
     auto payload = random_payload(payload_size, seed);
 
