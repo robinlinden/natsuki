@@ -105,6 +105,8 @@ int main(int argc, char **argv) try {
 
     std::list<natsuki::Nats> publishers;
     std::list<std::thread> threads;
+    std::cout << "Starting " << publisher_count << " publishers, publishing "
+            << msgs / publisher_count << " messages each.\n";
     for (int i = 0; i < publisher_count; ++i) {
         auto &nats = publishers.emplace_back(address);
         threads.emplace_back(&natsuki::Nats::run, &nats);
