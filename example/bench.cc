@@ -135,9 +135,9 @@ int main(int argc, char **argv) try {
 
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     auto const msgs_per_second = static_cast<float>(msgs) / duration.count() * 1000; // msgs/ms -> msgs/s
-    std::cout << std::fixed << std::setprecision(0)
-            << "Published " << msgs << " messages in "
-            << duration.count() << "ms. (" << msgs_per_second << " msgs/s)\n";
+    std::cout << std::fixed << "Published " << msgs << " messages in "
+            << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
+            << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
