@@ -45,6 +45,7 @@ int main(int argc, char **argv) try {
     int payload_size = 10;
     auto seed = static_cast<unsigned>(std::time(nullptr));
     int publisher_count = 1;
+    int subscriber_count = 0;
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i] == "--msgs"sv) {
@@ -91,6 +92,17 @@ int main(int argc, char **argv) try {
             continue;
         }
 
+        if (argv[i] == "--sub"sv) {
+            if (i + 1 == argc) {
+                std::cout << "Missing count after --sub\n";
+                return 1;
+            }
+
+            subscriber_count = std::stoi(argv[i + 1]);
+            ++i;
+            continue;
+        }
+
         // Positional.
         if (i == argc - 1) {
             address = argv[i];
@@ -101,10 +113,34 @@ int main(int argc, char **argv) try {
             << " and payload size " << payload_size
             << "B against NATS server at " << address << ".\n";
 
+    std::list<std::thread> threads;
+    std::list<natsuki::Nats> subscribers;
+
+    if (subscriber_count > 0) {
+        std::cout << "Starting " << subscriber_count << " subscribers, expecting "
+                << msgs << " messages each.\n";
+    }
+    for (int i = 0; i < subscriber_count; ++i) {
+        auto &nats = subscribers.emplace_back(address);
+        threads.emplace_back(&natsuki::Nats::run, &nats);
+    }
+
+    for (auto &nats : subscribers) {
+        nats.subscribe("bench"sv, [i = 0, msgs, &nats](std::string_view) mutable {
+            i += 1;
+            if (i == msgs) {
+                nats.shutdown();
+            }
+        });
+    }
+
+    // TODO(robinlinden): Waiting for subscription messages to have propagated
+    // in this way shouldn't be needed.
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
     auto payload = random_payload(payload_size, seed);
 
     std::list<natsuki::Nats> publishers;
-    std::list<std::thread> threads;
     std::cout << "Starting " << publisher_count << " publishers, publishing "
             << msgs / publisher_count << " messages each.\n";
     for (int i = 0; i < publisher_count; ++i) {
@@ -127,6 +163,11 @@ int main(int argc, char **argv) try {
         runners[i].join();
     }
 
+    for (std::size_t i = 0; i < subscribers.size(); ++i) {
+        threads.front().join();
+        threads.pop_front();
+    }
+
     auto const end = std::chrono::high_resolution_clock::now();
 
     for (auto &nats : publishers) {
@@ -137,9 +178,12 @@ int main(int argc, char **argv) try {
 
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     auto const msgs_per_second = static_cast<float>(msgs) / duration.count() * 1000; // msgs/ms -> msgs/s
-    std::cout << std::fixed << "Published " << msgs << " messages in "
+    // We publish each message once, and every subscriber reads every message from the server.
+    auto const processed = msgs_per_second * (1 + subscriber_count);
+    // TODO(robinlinden): Improve message, add per-subscriber/publisher stats.
+    std::cout << std::fixed << "Processed " << msgs << " messages in "
             << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-            << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+            << std::setprecision(1) << payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
