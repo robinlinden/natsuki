@@ -81,6 +81,10 @@ public:
                 positional_[maybe_positional](arg);
                 continue;
             }
+
+            std::stringstream ss;
+            ss << "Unhandled argument " << arg << '\n';
+            throw std::invalid_argument(ss.str());
         }
     }
 
