@@ -93,6 +93,12 @@ private:
     std::vector<std::function<void(std::string_view)>> positional_;
 };
 
+struct PartialResult {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
+    std::chrono::time_point<std::chrono::high_resolution_clock> end_time;
+    int messages;
+};
+
 } // namespace
 
 int main(int argc, char **argv) try {
@@ -151,18 +157,29 @@ int main(int argc, char **argv) try {
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
-    std::vector<std::thread> runners;
+    std::vector<std::future<PartialResult>> runners;
     runners.reserve(publisher_count);
     for (auto &nats : publishers) {
-        runners.emplace_back([&] {
-            for (int j = 0; j < msgs / publisher_count; ++j) {
+        runners.push_back(std::async(std::launch::async, [&] {
+            auto const my_start = std::chrono::high_resolution_clock::now();
+            auto const my_msgs = msgs /publisher_count;
+
+            for (int j = 0; j < my_msgs; ++j) {
                 nats.publish("bench"sv, payload);
             }
-        });
+
+            auto const my_end = std::chrono::high_resolution_clock::now();
+
+            return PartialResult{
+                .start_time = my_start,
+                .end_time = my_end,
+                .messages = my_msgs,
+            };
+        }));
     }
 
     for (int i = 0; i < publisher_count; ++i) {
-        runners[i].join();
+        runners[i].wait();
     }
 
     for (std::size_t i = 0; i < subscribers.size(); ++i) {
@@ -176,6 +193,19 @@ int main(int argc, char **argv) try {
         nats.shutdown();
         threads.front().join();
         threads.pop_front();
+    }
+
+
+    if (publisher_count > 1) {
+        for (std::size_t i = 0; i < runners.size(); ++i) {
+            auto const res = runners[i].get();
+            auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
+            auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
+            std::cout << std::fixed << "Publisher " << i << " published " << res.messages << " messages in "
+                    << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
+                    << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+        }
+        std::cout << '\n';
     }
 
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
