@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 cc_binary(
-    name = "natsuki",
-    srcs = ["natsuki.cc"],
+    name = "bench",
+    srcs = ["bench.cc"],
     deps = ["//natsuki"],
 )

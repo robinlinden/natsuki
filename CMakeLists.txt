@@ -43,7 +43,7 @@ target_compile_features(${PROJECT_NAME}_example
 
 # Bench
 add_executable(${PROJECT_NAME}_bench
-    example/bench.cc
+    bench/bench.cc
 )
 
 target_link_libraries(${PROJECT_NAME}_bench
