@@ -24,11 +24,11 @@ build:linux --copt='-Wno-missing-field-initializers' # Common idiom for zeroing 
 build:linux --cxxopt='-Wnon-virtual-dtor'
 build:linux --cxxopt='-Woverloaded-virtual'
 
-build:linux --per_file_copt='bench@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='bench[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='bench[:/]@-Wno-shadow' # asio leaks this into our code.
-build:linux --per_file_copt='example@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='example[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
-build:linux --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='natsuki[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
 build:linux --per_file_copt='external/asio[:/]@-Wno-sign-compare'
