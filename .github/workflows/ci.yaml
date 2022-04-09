@@ -12,14 +12,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang
+      run: CC=clang-12 CXX=clang++-12 bazel build ...
 
   linux-clang-asan:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: CC=clang-12 CXX=clang++-12 bazel build ... --config clang --config asan
+      run: CC=clang-12 CXX=clang++-12 bazel build ... --config asan
 
   windows-msvc:
     runs-on: windows-2022

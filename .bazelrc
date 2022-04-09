@@ -25,8 +25,11 @@ build:linux --cxxopt='-Wnon-virtual-dtor'
 build:linux --cxxopt='-Woverloaded-virtual'
 
 build:linux --per_file_copt='bench@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='bench[:/]@-Wno-shadow' # asio leaks this into our code.
 build:linux --per_file_copt='example@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki@-Wno-undef' # asio leaks this into our code.
+build:linux --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
 build:linux --per_file_copt='external/asio[:/]@-Wno-sign-compare'
 build:linux --per_file_copt='external/asio[:/]@-Wno-undef'
@@ -34,10 +37,6 @@ build:linux --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
 build:linux --per_file_copt='external/boringssl[:/]@-Wno-unused-parameter'
 
 build:gcc --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
-
-build:clang --per_file_copt='bench[:/]@-Wno-shadow' # asio leaks this into our code.
-build:clang --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
-build:clang --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
 build:windows --copt='/std:c++latest'
 build:windows --copt='/W4' # More warnings.
