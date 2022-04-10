@@ -1,25 +1,26 @@
 on: [push, pull_request]
 jobs:
-  linux-gcc:
+  linux-ci:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+        - name: linux-gcc
+          cc: gcc-10
+          cxx: g++-10
+          bazel: --config gcc
+        - name: linux-clang
+          cc: clang-12
+          cxx: clang++-12
+        - name: linux-clang-asan
+          cc: clang-12
+          cxx: clang++-12
+          bazel: --config asan
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: CC=gcc-10 CXX=g++-10 bazel build ... --config gcc
-
-  linux-clang:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: CC=clang-12 CXX=clang++-12 bazel build ...
-
-  linux-clang-asan:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: CC=clang-12 CXX=clang++-12 bazel build ... --config asan
+    - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
+    - run: bazel build ... ${{ matrix.bazel }}
 
   windows-msvc:
     runs-on: windows-2022
