@@ -13,6 +13,7 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <random>
 #include <string>
@@ -70,6 +71,7 @@ int main(int argc, char **argv) try {
 
     std::list<std::thread> threads;
     std::list<natsuki::Nats> subscribers;
+    std::vector<PartialResult> subscriber_results(subscriber_count);
 
     if (subscriber_count > 0) {
         std::cout << "Starting " << subscriber_count << " subscribers, expecting "
@@ -80,10 +82,18 @@ int main(int argc, char **argv) try {
         threads.emplace_back(&natsuki::Nats::run, &nats);
     }
 
-    for (auto &nats : subscribers) {
-        nats.subscribe("bench"sv, [i = 0, msgs, &nats](std::string_view) mutable {
-            i += 1;
-            if (i == msgs) {
+    for (int i = 0; i < subscriber_count; ++i) {
+        auto &nats = *std::next(begin(subscribers), i);
+        nats.subscribe("bench"sv, [msg = 0, msgs, &nats , idx = i, &subscriber_results](std::string_view) mutable {
+            if (msg == 0) {
+                subscriber_results[idx].start_time = std::chrono::high_resolution_clock::now();
+            }
+
+            msg += 1;
+
+            if (msg == msgs) {
+                subscriber_results[idx].end_time = std::chrono::high_resolution_clock::now();
+                subscriber_results[idx].messages = msgs;
                 nats.shutdown();
             }
         });
@@ -152,8 +162,17 @@ int main(int argc, char **argv) try {
                     << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
                     << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
         }
-        std::cout << '\n';
     }
+
+    for (int i = 0; i < subscriber_count; ++i) {
+        auto const res = subscriber_results[i];
+        auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
+        auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
+        std::cout << std::fixed << "Subscriber " << i << " handled " << res.messages << " messages in "
+                << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
+                << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+    }
+    std::cout << '\n';
 
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     auto const msgs_per_second = static_cast<float>(msgs) / duration.count() * 1000; // msgs/ms -> msgs/s
