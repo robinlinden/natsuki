@@ -65,10 +65,17 @@ void Nats::publish(
     });
 }
 
-Subscription Nats::subscribe(std::string_view subject, std::function<void(std::string_view)> cb) {
+Subscription Nats::subscribe(
+        std::string_view subject,
+        std::function<void(std::string_view)> cb,
+        SubscriptionOptions opts) {
     std::stringstream ss;
     int sid = next_subscription_id_.fetch_add(1);
     ss << "SUB " << subject << " " << sid << "\r\n";
+
+    if (opts.unsubscribe_after != SubscriptionOptions::kNever) {
+        ss << "UNSUB " << sid << " " << opts.unsubscribe_after << "\r\n";
+    }
 
     asio::post(io_context_, [this, sid, cb, msg = ss.str()] {
         subscriptions_[sid] = cb;

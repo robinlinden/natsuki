@@ -30,11 +30,18 @@ int main(int argc, char **argv) try {
         std::cout << "ping 2: " << data << "\n";
     });
 
+    nats.subscribe("natsuki.unsubscribed_after", [](auto data) {
+        std::cout << "this unsubscribes after receiving 1 message: " << data << '\n';
+    }, { .unsubscribe_after = 1, });
+
     nats.publish("natsuki.running", "true");
     nats.publish("natsuki.ping", "1", "natsuki.pong");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     nats.unsubscribe(std::move(ping_sub)).wait();
     nats.publish("natsuki.ping", "2");
+    nats.publish("natsuki.unsubscribed_after", "first!");
+    nats.publish("natsuki.unsubscribed_after", "this shouldn't be received");
+    nats.publish("natsuki.unsubscribed_after", "nor should this be");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     nats.shutdown();
     nats_thread.join();

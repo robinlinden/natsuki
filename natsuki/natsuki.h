@@ -27,6 +27,11 @@ private:
     int id_{};
 };
 
+struct SubscriptionOptions {
+    static constexpr unsigned kNever = 0;
+    unsigned unsubscribe_after{kNever};
+};
+
 class Nats {
 public:
     explicit Nats(std::string address, std::uint16_t port = 4222)
@@ -44,7 +49,10 @@ public:
             std::string_view payload,
             std::optional<std::string_view> reply_to = std::nullopt);
 
-    Subscription subscribe(std::string_view subject, std::function<void(std::string_view)> cb);
+    Subscription subscribe(
+            std::string_view subject,
+            std::function<void(std::string_view)> cb,
+            SubscriptionOptions = {});
     std::future<void> unsubscribe(Subscription &&);
 
     Nats(Nats const &) = delete;
