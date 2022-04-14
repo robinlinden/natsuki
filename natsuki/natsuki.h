@@ -47,6 +47,9 @@ public:
     Subscription subscribe(std::string_view subject, std::function<void(std::string_view)> cb);
     std::future<void> unsubscribe(Subscription &&);
 
+    Nats(Nats const &) = delete;
+    Nats &operator=(Nats const &) = delete;
+
 private:
     void on_read(asio::error_code const &ec, std::size_t bytes_transferred);
 
