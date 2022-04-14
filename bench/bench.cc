@@ -55,20 +55,7 @@ struct Options {
     int subscriber_count{0};
 };
 
-} // namespace
-
-int main(int argc, char **argv) try {
-    Options opts;
-
-    bench::ArgParser()
-            .argument("--msgs", opts.messages)
-            .argument("--size", opts.payload_size)
-            .argument("--seed", opts.seed)
-            .argument("--pub", opts.publisher_count)
-            .argument("--sub", opts.subscriber_count)
-            .positional(opts.address)
-            .parse(argc, argv);
-
+void run_bench(Options const opts) {
     std::cout << "Benchmarking with seed " << opts.seed
             << " and payload size " << opts.payload_size
             << "B against NATS server at " << opts.address << ".\n";
@@ -188,6 +175,23 @@ int main(int argc, char **argv) try {
     std::cout << std::fixed << "Processed " << opts.messages << " messages in "
             << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
             << std::setprecision(1) << opts.payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
+}
+
+} // namespace
+
+int main(int argc, char **argv) try {
+    Options opts;
+
+    bench::ArgParser()
+            .argument("--msgs", opts.messages)
+            .argument("--size", opts.payload_size)
+            .argument("--seed", opts.seed)
+            .argument("--pub", opts.publisher_count)
+            .argument("--sub", opts.subscriber_count)
+            .positional(opts.address)
+            .parse(argc, argv);
+
+    run_bench(std::move(opts));
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
