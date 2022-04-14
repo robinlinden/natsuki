@@ -46,45 +46,51 @@ struct PartialResult {
     int messages;
 };
 
+struct Options {
+    std::string address{"localhost"};
+    int messages{1'000'000};
+    int payload_size{10};
+    unsigned seed{static_cast<unsigned>(std::time(nullptr))};
+    int publisher_count{1};
+    int subscriber_count{0};
+};
+
 } // namespace
 
 int main(int argc, char **argv) try {
-    auto address = "localhost"s;
-    int msgs = 1'000'000;
-    int payload_size = 10;
-    auto seed = static_cast<unsigned>(std::time(nullptr));
-    int publisher_count = 1;
-    int subscriber_count = 0;
+    Options opts;
 
     bench::ArgParser()
-            .argument("--msgs", msgs)
-            .argument("--size", payload_size)
-            .argument("--seed", seed)
-            .argument("--pub", publisher_count)
-            .argument("--sub", subscriber_count)
-            .positional(address)
+            .argument("--msgs", opts.messages)
+            .argument("--size", opts.payload_size)
+            .argument("--seed", opts.seed)
+            .argument("--pub", opts.publisher_count)
+            .argument("--sub", opts.subscriber_count)
+            .positional(opts.address)
             .parse(argc, argv);
 
-    std::cout << "Benchmarking with seed " << seed
-            << " and payload size " << payload_size
-            << "B against NATS server at " << address << ".\n";
+    std::cout << "Benchmarking with seed " << opts.seed
+            << " and payload size " << opts.payload_size
+            << "B against NATS server at " << opts.address << ".\n";
 
     std::list<std::thread> threads;
     std::list<natsuki::Nats> subscribers;
-    std::vector<PartialResult> subscriber_results(subscriber_count);
+    std::vector<PartialResult> subscriber_results(opts.subscriber_count);
 
-    if (subscriber_count > 0) {
-        std::cout << "Starting " << subscriber_count << " subscribers, expecting "
-                << msgs << " messages each.\n";
+    if (opts.subscriber_count > 0) {
+        std::cout << "Starting " << opts.subscriber_count << " subscribers, expecting "
+                << opts.messages << " messages each.\n";
     }
-    for (int i = 0; i < subscriber_count; ++i) {
-        auto &nats = subscribers.emplace_back(address);
+    for (int i = 0; i < opts.subscriber_count; ++i) {
+        auto &nats = subscribers.emplace_back(opts.address);
         threads.emplace_back(&natsuki::Nats::run, &nats);
     }
 
-    for (int i = 0; i < subscriber_count; ++i) {
+    for (int i = 0; i < opts.subscriber_count; ++i) {
         auto &nats = *std::next(begin(subscribers), i);
-        nats.subscribe("bench"sv, [msg = 0, msgs, &nats , idx = i, &subscriber_results](std::string_view) mutable {
+        nats.subscribe(
+                "bench"sv,
+                [msg = 0, msgs = opts.messages, &nats , idx = i, &subscriber_results](std::string_view) mutable {
             if (msg == 0) {
                 subscriber_results[idx].start_time = std::chrono::high_resolution_clock::now();
             }
@@ -103,23 +109,23 @@ int main(int argc, char **argv) try {
     // in this way shouldn't be needed.
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    auto payload = random_payload(payload_size, seed);
+    auto payload = random_payload(opts.payload_size, opts.seed);
 
     std::list<natsuki::Nats> publishers;
-    std::cout << "Starting " << publisher_count << " publishers, publishing "
-            << msgs / publisher_count << " messages each.\n";
-    for (int i = 0; i < publisher_count; ++i) {
-        auto &nats = publishers.emplace_back(address);
+    std::cout << "Starting " << opts.publisher_count << " publishers, publishing "
+            << opts.messages / opts.publisher_count << " messages each.\n";
+    for (int i = 0; i < opts.publisher_count; ++i) {
+        auto &nats = publishers.emplace_back(opts.address);
         threads.emplace_back(&natsuki::Nats::run, &nats);
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
     std::vector<std::future<PartialResult>> runners;
-    runners.reserve(publisher_count);
+    runners.reserve(opts.publisher_count);
     for (auto &nats : publishers) {
         runners.push_back(std::async(std::launch::async, [&] {
             auto const my_start = std::chrono::high_resolution_clock::now();
-            auto const my_msgs = msgs /publisher_count;
+            auto const my_msgs = opts.messages / opts.publisher_count;
 
             for (int j = 0; j < my_msgs; ++j) {
                 nats.publish("bench"sv, payload);
@@ -135,7 +141,7 @@ int main(int argc, char **argv) try {
         }));
     }
 
-    for (int i = 0; i < publisher_count; ++i) {
+    for (int i = 0; i < opts.publisher_count; ++i) {
         runners[i].wait();
     }
 
@@ -153,35 +159,35 @@ int main(int argc, char **argv) try {
     }
 
 
-    if (publisher_count > 1) {
+    if (opts.publisher_count > 1) {
         for (std::size_t i = 0; i < runners.size(); ++i) {
             auto const res = runners[i].get();
             auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
             auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
             std::cout << std::fixed << "Publisher " << i << " published " << res.messages << " messages in "
                     << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-                    << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+                    << std::setprecision(1) << opts.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
         }
     }
 
-    for (int i = 0; i < subscriber_count; ++i) {
+    for (int i = 0; i < opts.subscriber_count; ++i) {
         auto const res = subscriber_results[i];
         auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
         auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
         std::cout << std::fixed << "Subscriber " << i << " handled " << res.messages << " messages in "
                 << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-                << std::setprecision(1) << payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+                << std::setprecision(1) << opts.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
     }
     std::cout << '\n';
 
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    auto const msgs_per_second = static_cast<float>(msgs) / duration.count() * 1000; // msgs/ms -> msgs/s
+    auto const msgs_per_second = static_cast<float>(opts.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
     // We publish each message once, and every subscriber reads every message from the server.
-    auto const processed = msgs_per_second * (1 + subscriber_count);
+    auto const processed = msgs_per_second * (1 + opts.subscriber_count);
     // TODO(robinlinden): Improve message, add per-subscriber/publisher stats.
-    std::cout << std::fixed << "Processed " << msgs << " messages in "
+    std::cout << std::fixed << "Processed " << opts.messages << " messages in "
             << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-            << std::setprecision(1) << payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
+            << std::setprecision(1) << opts.payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
