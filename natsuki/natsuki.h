@@ -30,6 +30,7 @@ private:
 struct SubscriptionOptions {
     static constexpr unsigned kNever = 0;
     unsigned unsubscribe_after{kNever};
+    std::string_view queue_group{};
 };
 
 class Nats {

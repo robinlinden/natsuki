@@ -30,6 +30,13 @@ int main(int argc, char **argv) try {
         std::cout << "ping 2: " << data << "\n";
     });
 
+    nats.subscribe("natsuki.qgroup", [](auto data) {
+        std::cout << "qgroup listener 1: " << data << '\n';
+    }, { .queue_group = "G1", });
+    nats.subscribe("natsuki.qgroup", [](auto data) {
+        std::cout << "qgroup listener 2: " << data << '\n';
+    }, { .queue_group = "G1", });
+
     nats.subscribe("natsuki.unsubscribed_after", [](auto data) {
         std::cout << "this unsubscribes after receiving 1 message: " << data << '\n';
     }, { .unsubscribe_after = 1, });
@@ -42,6 +49,8 @@ int main(int argc, char **argv) try {
     nats.publish("natsuki.unsubscribed_after", "first!");
     nats.publish("natsuki.unsubscribed_after", "this shouldn't be received");
     nats.publish("natsuki.unsubscribed_after", "nor should this be");
+    nats.publish("natsuki.qgroup", "hello?");
+    nats.publish("natsuki.qgroup", "hello!");
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     nats.shutdown();
     nats_thread.join();

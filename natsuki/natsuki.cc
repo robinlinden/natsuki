@@ -71,7 +71,13 @@ Subscription Nats::subscribe(
         SubscriptionOptions opts) {
     std::stringstream ss;
     int sid = next_subscription_id_.fetch_add(1);
-    ss << "SUB " << subject << " " << sid << "\r\n";
+    ss << "SUB " << subject << " ";
+
+    if (!opts.queue_group.empty()) {
+        ss << opts.queue_group << " ";
+    }
+
+    ss << sid << "\r\n";
 
     if (opts.unsubscribe_after != SubscriptionOptions::kNever) {
         ss << "UNSUB " << sid << " " << opts.unsubscribe_after << "\r\n";
