@@ -33,6 +33,10 @@ public:
     }
 
     void before_publisher_start() override {
+        if (opts_.publisher_count == 0) {
+            return;
+        }
+
         std::cout << "Starting " << opts_.publisher_count << " publishers, publishing "
                 << opts_.messages / opts_.publisher_count << " messages each.\n";
     }
