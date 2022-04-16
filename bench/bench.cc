@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: MIT
 
 #include "bench/arg_parser.h"
+#include "bench/options.h"
+#include "bench/partial_result.h"
 
 #include "natsuki/natsuki.h"
 
 #include <algorithm>
 #include <chrono>
-#include <ctime>
 #include <exception>
 #include <functional>
 #include <iomanip>
@@ -23,6 +24,7 @@
 
 using namespace std::literals;
 
+namespace bench {
 namespace {
 
 std::string random_payload(int length, unsigned seed) {
@@ -39,21 +41,6 @@ std::string random_payload(int length, unsigned seed) {
     std::generate_n(begin(result), length, [&] { return chars[dist(gen)]; });
     return result;
 }
-
-struct PartialResult {
-    std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
-    std::chrono::time_point<std::chrono::high_resolution_clock> end_time;
-    int messages;
-};
-
-struct Options {
-    std::string address{"localhost"};
-    int messages{1'000'000};
-    int payload_size{10};
-    unsigned seed{static_cast<unsigned>(std::time(nullptr))};
-    int publisher_count{1};
-    int subscriber_count{0};
-};
 
 void run_bench(Options const opts) {
     std::cout << "Benchmarking with seed " << opts.seed
@@ -178,9 +165,10 @@ void run_bench(Options const opts) {
 }
 
 } // namespace
+} // namespace bench
 
 int main(int argc, char **argv) try {
-    Options opts;
+    bench::Options opts;
 
     bench::ArgParser()
             .argument("--msgs", opts.messages)
@@ -191,7 +179,7 @@ int main(int argc, char **argv) try {
             .positional(opts.address)
             .parse(argc, argv);
 
-    run_bench(std::move(opts));
+    bench::run_bench(std::move(opts));
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
