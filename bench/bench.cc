@@ -5,6 +5,7 @@
 #include "bench/arg_parser.h"
 #include "bench/options.h"
 #include "bench/partial_result.h"
+#include "bench/stdout_listener.h"
 
 #include "natsuki/natsuki.h"
 
@@ -12,7 +13,6 @@
 #include <chrono>
 #include <exception>
 #include <functional>
-#include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -42,19 +42,14 @@ std::string random_payload(int length, unsigned seed) {
     return result;
 }
 
-void run_bench(Options const opts) {
-    std::cout << "Benchmarking with seed " << opts.seed
-            << " and payload size " << opts.payload_size
-            << "B against NATS server at " << opts.address << ".\n";
+void run_bench(StdoutListener &listener, Options const opts) {
+    listener.on_benchmark_start(opts);
 
     std::list<std::thread> threads;
     std::list<natsuki::Nats> subscribers;
     std::vector<PartialResult> subscriber_results(opts.subscriber_count);
 
-    if (opts.subscriber_count > 0) {
-        std::cout << "Starting " << opts.subscriber_count << " subscribers, expecting "
-                << opts.messages << " messages each.\n";
-    }
+    listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
         auto &nats = subscribers.emplace_back(opts.address);
         threads.emplace_back(&natsuki::Nats::run, &nats);
@@ -86,8 +81,7 @@ void run_bench(Options const opts) {
     auto payload = random_payload(opts.payload_size, opts.seed);
 
     std::list<natsuki::Nats> publishers;
-    std::cout << "Starting " << opts.publisher_count << " publishers, publishing "
-            << opts.messages / opts.publisher_count << " messages each.\n";
+    listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
         auto &nats = publishers.emplace_back(opts.address);
         threads.emplace_back(&natsuki::Nats::run, &nats);
@@ -132,36 +126,15 @@ void run_bench(Options const opts) {
         threads.pop_front();
     }
 
-
-    if (opts.publisher_count > 1) {
-        for (std::size_t i = 0; i < runners.size(); ++i) {
-            auto const res = runners[i].get();
-            auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
-            auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
-            std::cout << std::fixed << "Publisher " << i << " published " << res.messages << " messages in "
-                    << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-                    << std::setprecision(1) << opts.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
-        }
-    }
-
-    for (int i = 0; i < opts.subscriber_count; ++i) {
-        auto const res = subscriber_results[i];
-        auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
-        auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
-        std::cout << std::fixed << "Subscriber " << i << " handled " << res.messages << " messages in "
-                << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-                << std::setprecision(1) << opts.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
-    }
-    std::cout << '\n';
-
+    std::vector<PartialResult> publisher_results{};
+    publisher_results.reserve(runners.size());
+    std::transform(
+            runners.begin(), runners.end(), std::back_inserter(publisher_results),
+            [](auto &res) { return res.get(); });
+    listener.on_publish_done(publisher_results);
+    listener.on_subscribe_done(subscriber_results);
     auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    auto const msgs_per_second = static_cast<float>(opts.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
-    // We publish each message once, and every subscriber reads every message from the server.
-    auto const processed = msgs_per_second * (1 + opts.subscriber_count);
-    // TODO(robinlinden): Improve message, add per-subscriber/publisher stats.
-    std::cout << std::fixed << "Processed " << opts.messages << " messages in "
-            << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-            << std::setprecision(1) << opts.payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
+    listener.on_benchmark_done(duration);
 }
 
 } // namespace
@@ -179,7 +152,8 @@ int main(int argc, char **argv) try {
             .positional(opts.address)
             .parse(argc, argv);
 
-    bench::run_bench(std::move(opts));
+    bench::StdoutListener listener{};
+    bench::run_bench(listener, std::move(opts));
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;

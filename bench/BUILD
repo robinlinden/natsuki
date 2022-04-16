@@ -19,6 +19,13 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+# Benchmark listeners
+cc_library(
+    name = "stdout_listener",
+    hdrs = ["stdout_listener.h"],
+    visibility = ["//visibility:public"],
+)
+
 # Application
 cc_binary(
     name = "bench",
@@ -27,6 +34,7 @@ cc_binary(
         ":arg_parser",
         ":options",
         ":partial_result",
+        ":stdout_listener",
         "//natsuki",
     ],
 )
