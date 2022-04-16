@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "bench/arg_parser.h"
+#include "bench/ibenchmark_listener.h"
 #include "bench/options.h"
 #include "bench/partial_result.h"
 #include "bench/stdout_listener.h"
@@ -42,7 +43,7 @@ std::string random_payload(int length, unsigned seed) {
     return result;
 }
 
-void run_bench(StdoutListener &listener, Options const opts) {
+void run_bench(IBenchmarkListener &listener, Options const opts) {
     listener.on_benchmark_start(opts);
 
     std::list<std::thread> threads;

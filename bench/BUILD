@@ -21,9 +21,20 @@ cc_library(
 
 # Benchmark listeners
 cc_library(
+    name = "ibenchmark_listener",
+    hdrs = ["ibenchmark_listener.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":options",
+        ":partial_result",
+    ],
+)
+
+cc_library(
     name = "stdout_listener",
     hdrs = ["stdout_listener.h"],
     visibility = ["//visibility:public"],
+    deps = [":ibenchmark_listener"],
 )
 
 # Application
@@ -32,6 +43,7 @@ cc_binary(
     srcs = ["bench.cc"],
     deps = [
         ":arg_parser",
+        ":ibenchmark_listener",
         ":options",
         ":partial_result",
         ":stdout_listener",
