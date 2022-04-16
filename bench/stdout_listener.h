@@ -68,7 +68,6 @@ public:
         auto const msgs_per_second = static_cast<float>(opts_.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
         // We publish each message once, and every subscriber reads every message from the server.
         auto const processed = msgs_per_second * (1 + opts_.subscriber_count);
-        // TODO(robinlinden): Improve message, add per-subscriber/publisher stats.
         std::cout << std::fixed << "Processed " << opts_.messages << " messages in "
                 << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
                 << std::setprecision(1) << opts_.payload_size * processed / 1024.f / 1024.f << "MB/s)\n";
