@@ -17,6 +17,7 @@
 #include <iostream>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <random>
 #include <string>
 #include <string_view>
@@ -47,18 +48,18 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
     listener.on_benchmark_start(opts);
 
     std::list<std::thread> threads;
-    std::list<natsuki::Nats> subscribers;
+    std::vector<std::unique_ptr<natsuki::Nats>> subscribers;
     std::vector<PartialResult> subscriber_results(opts.subscriber_count);
 
     listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        auto &nats = subscribers.emplace_back(opts.address);
-        threads.emplace_back(&natsuki::Nats::run, &nats);
+        auto &nats = subscribers.emplace_back(std::make_unique<natsuki::Nats>(opts.address));
+        threads.emplace_back(&natsuki::Nats::run, nats.get());
     }
 
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        auto &nats = *std::next(begin(subscribers), i);
-        nats.subscribe(
+        auto &nats = subscribers[i];
+        nats->subscribe(
                 "bench"sv,
                 [msg = 0, msgs = opts.messages, &nats , idx = i, &subscriber_results](std::string_view) mutable {
             if (msg == 0) {
@@ -70,7 +71,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
             if (msg == msgs) {
                 subscriber_results[idx].end_time = std::chrono::high_resolution_clock::now();
                 subscriber_results[idx].messages = msgs;
-                nats.shutdown();
+                nats->shutdown();
             }
         });
     }
@@ -81,11 +82,11 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     auto payload = random_payload(opts.payload_size, opts.seed);
 
-    std::list<natsuki::Nats> publishers;
+    std::vector<std::unique_ptr<natsuki::Nats>> publishers;
     listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
-        auto &nats = publishers.emplace_back(opts.address);
-        threads.emplace_back(&natsuki::Nats::run, &nats);
+        auto &nats = publishers.emplace_back(std::make_unique<natsuki::Nats>(opts.address));
+        threads.emplace_back(&natsuki::Nats::run, nats.get());
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
@@ -97,7 +98,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
             auto const my_msgs = opts.messages / opts.publisher_count;
 
             for (int j = 0; j < my_msgs; ++j) {
-                nats.publish("bench"sv, payload);
+                nats->publish("bench"sv, payload);
             }
 
             auto const my_end = std::chrono::high_resolution_clock::now();
@@ -122,7 +123,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
     auto const end = std::chrono::high_resolution_clock::now();
 
     for (auto &nats : publishers) {
-        nats.shutdown();
+        nats->shutdown();
         threads.front().join();
         threads.pop_front();
     }
