@@ -44,6 +44,26 @@ namespace {
     return result;
 }
 
+class Publisher {
+public:
+    Publisher(std::string address, std::string topic)
+            : nats_{std::move(address)}, topic_{std::move(topic)} {}
+
+    ~Publisher() {
+        nats_.shutdown();
+        thread_.join();
+    }
+
+    void publish(std::string_view data) {
+        nats_.publish(topic_, data);
+    }
+
+private:
+    natsuki::Nats nats_;
+    std::thread thread_{&natsuki::Nats::run, &nats_};
+    std::string topic_;
+};
+
 void run_bench(IBenchmarkListener &listener, Options const opts) {
     listener.on_benchmark_start(opts);
 
@@ -82,23 +102,22 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     auto payload = random_payload(opts.payload_size, opts.seed);
 
-    std::vector<std::unique_ptr<natsuki::Nats>> publishers;
+    std::vector<std::unique_ptr<Publisher>> publishers;
     listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
-        auto &nats = publishers.emplace_back(std::make_unique<natsuki::Nats>(opts.address));
-        threads.emplace_back(&natsuki::Nats::run, nats.get());
+        publishers.emplace_back(std::make_unique<Publisher>(opts.address, "bench"s));
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
     std::vector<std::future<PartialResult>> runners;
     runners.reserve(opts.publisher_count);
-    for (auto &nats : publishers) {
+    for (auto &publisher : publishers) {
         runners.push_back(std::async(std::launch::async, [&] {
             auto const my_start = std::chrono::high_resolution_clock::now();
             auto const my_msgs = opts.messages / opts.publisher_count;
 
             for (int j = 0; j < my_msgs; ++j) {
-                nats->publish("bench"sv, payload);
+                publisher->publish(payload);
             }
 
             auto const my_end = std::chrono::high_resolution_clock::now();
@@ -122,10 +141,8 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     auto const end = std::chrono::high_resolution_clock::now();
 
-    for (auto &nats : publishers) {
-        nats->shutdown();
-        threads.front().join();
-        threads.pop_front();
+    while (!publishers.empty()) {
+        publishers.pop_back();
     }
 
     std::vector<PartialResult> publisher_results{};
