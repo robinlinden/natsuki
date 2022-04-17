@@ -20,7 +20,7 @@ namespace bench {
 class ArgParser {
 public:
     template<std::integral ArgT>
-    ArgParser &argument(std::string_view long_option, ArgT &out) {
+    [[nodiscard]] ArgParser &argument(std::string_view long_option, ArgT &out) {
         long_[long_option] = [&out](std::string_view argument) {
             auto [ptr, ec] = std::from_chars(argument.data(), argument.data() + argument.size(), out);
             if (ec != std::errc{}) {
@@ -30,7 +30,7 @@ public:
         return *this;
     }
 
-    ArgParser &positional(std::string &out) {
+    [[nodiscard]] ArgParser &positional(std::string &out) {
         positional_.push_back([&out](std::string_view argument) {
             out = std::string{argument};
         });

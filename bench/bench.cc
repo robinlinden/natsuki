@@ -28,7 +28,7 @@ using namespace std::literals;
 namespace bench {
 namespace {
 
-std::string random_payload(int length, unsigned seed) {
+[[nodiscard]] std::string random_payload(int length, unsigned seed) {
     static constexpr auto chars =
             "0123456789"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
