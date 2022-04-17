@@ -11,6 +11,7 @@
 #include "natsuki/natsuki.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <exception>
 #include <functional>
@@ -76,12 +77,13 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
         auto &nats = subscribers.emplace_back(std::make_unique<natsuki::Nats>(opts.address));
         threads.emplace_back(&natsuki::Nats::run, nats.get());
     }
+    std::atomic<std::size_t> subscribers_done{0};
 
     for (int i = 0; i < opts.subscriber_count; ++i) {
         auto &nats = subscribers[i];
         nats->subscribe(
                 "bench"sv,
-                [msg = 0, msgs = opts.messages, &nats , idx = i, &subscriber_results](std::string_view) mutable {
+                [&, msg = 0, msgs = opts.messages, idx = i](std::string_view) mutable {
             if (msg == 0) {
                 subscriber_results[idx].start_time = std::chrono::high_resolution_clock::now();
             }
@@ -92,6 +94,8 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
                 subscriber_results[idx].end_time = std::chrono::high_resolution_clock::now();
                 subscriber_results[idx].messages = msgs;
                 nats->shutdown();
+                subscribers_done.fetch_add(1);
+                subscribers_done.notify_all();
             }
         });
     }
@@ -132,6 +136,12 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     for (int i = 0; i < opts.publisher_count; ++i) {
         runners[i].wait();
+    }
+
+    for (std::size_t done = subscribers_done.load();
+            done != subscribers.size();
+            done = subscribers_done.load()) {
+        subscribers_done.wait(done);
     }
 
     for (std::size_t i = 0; i < subscribers.size(); ++i) {
