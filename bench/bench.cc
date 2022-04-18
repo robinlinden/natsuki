@@ -67,27 +67,42 @@ private:
     std::string topic_;
 };
 
+class Subscriber {
+public:
+    Subscriber(std::string address, std::string topic)
+            : nats_{std::move(address)}, topic_{std::move(topic)} {}
+
+    ~Subscriber() {
+        nats_.shutdown();
+        thread_.join();
+    }
+
+    void subscribe(std::function<void(std::string_view)> callback) {
+        nats_.subscribe(topic_, std::move(callback));
+    }
+
+private:
+    natsuki::Nats nats_;
+    std::thread thread_{&natsuki::Nats::run, &nats_};
+    std::string topic_;
+};
+
 void run_bench(IBenchmarkListener &listener, Options const opts) {
     listener.on_benchmark_start(opts);
 
-    std::list<std::thread> threads;
-    std::vector<std::unique_ptr<natsuki::Nats>> subscribers;
+    std::vector<std::unique_ptr<Subscriber>> subscribers;
     std::vector<PartialResult> subscriber_results(opts.subscriber_count);
 
     listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        auto &nats = subscribers.emplace_back(std::make_unique<natsuki::Nats>(opts.address));
-        threads.emplace_back(&natsuki::Nats::run, nats.get());
+        subscribers.emplace_back(std::make_unique<Subscriber>(opts.address, "bench"s));
     }
     std::condition_variable subscribers_cv{};
     std::mutex subscribers_mtx{};
     std::size_t subscribers_done{0};
 
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        auto &nats = subscribers[i];
-        nats->subscribe(
-                "bench"sv,
-                [&, msg = 0, msgs = opts.messages, idx = i](std::string_view) mutable {
+        subscribers[i]->subscribe([&, msg = 0, msgs = opts.messages, idx = i](auto) mutable {
             if (msg == 0) {
                 subscriber_results[idx].start_time = std::chrono::high_resolution_clock::now();
             }
@@ -97,7 +112,6 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
             if (msg == msgs) {
                 subscriber_results[idx].end_time = std::chrono::high_resolution_clock::now();
                 subscriber_results[idx].messages = msgs;
-                nats->shutdown();
                 {
                     std::scoped_lock<std::mutex> lock{subscribers_mtx};
                     subscribers_done += 1;
@@ -150,12 +164,11 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
         subscribers_cv.wait(lock, [&] { return subscribers_done == subscribers.size(); });
     }
 
-    for (std::size_t i = 0; i < subscribers.size(); ++i) {
-        threads.front().join();
-        threads.pop_front();
-    }
-
     auto const end = std::chrono::high_resolution_clock::now();
+
+    while (!subscribers.empty()) {
+        subscribers.pop_back();
+    }
 
     while (!publishers.empty()) {
         publishers.pop_back();
