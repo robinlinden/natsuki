@@ -59,12 +59,12 @@ public:
     virtual void subscribe(std::function<void(std::string_view)> on_data) = 0;
 };
 
-class Publisher final : public IPublisher {
+class NatsukiPublisher final : public IPublisher {
 public:
-    Publisher(std::string address, std::string topic)
+    NatsukiPublisher(std::string address, std::string topic)
             : nats_{std::move(address)}, topic_{std::move(topic)} {}
 
-    ~Publisher() {
+    ~NatsukiPublisher() {
         nats_.shutdown();
         thread_.join();
     }
@@ -79,12 +79,12 @@ private:
     std::string topic_;
 };
 
-class Subscriber final : public ISubscriber {
+class NatsukiSubscriber final : public ISubscriber {
 public:
-    Subscriber(std::string address, std::string topic)
+    NatsukiSubscriber(std::string address, std::string topic)
             : nats_{std::move(address)}, topic_{std::move(topic)} {}
 
-    ~Subscriber() {
+    ~NatsukiSubscriber() {
         nats_.shutdown();
         thread_.join();
     }
@@ -107,7 +107,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        subscribers.emplace_back(std::make_unique<Subscriber>(opts.address, "bench"s));
+        subscribers.emplace_back(std::make_unique<NatsukiSubscriber>(opts.address, "bench"s));
     }
     std::condition_variable subscribers_cv{};
     std::mutex subscribers_mtx{};
@@ -142,7 +142,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
     std::vector<std::unique_ptr<IPublisher>> publishers;
     listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
-        publishers.emplace_back(std::make_unique<Publisher>(opts.address, "bench"s));
+        publishers.emplace_back(std::make_unique<NatsukiPublisher>(opts.address, "bench"s));
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
