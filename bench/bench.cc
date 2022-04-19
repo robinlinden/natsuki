@@ -47,7 +47,19 @@ namespace {
     return result;
 }
 
-class Publisher {
+class IPublisher {
+public:
+    virtual ~IPublisher() = default;
+    virtual void publish(std::string_view data) = 0;
+};
+
+class ISubscriber {
+public:
+    virtual ~ISubscriber() = default;
+    virtual void subscribe(std::function<void(std::string_view)> on_data) = 0;
+};
+
+class Publisher final : public IPublisher {
 public:
     Publisher(std::string address, std::string topic)
             : nats_{std::move(address)}, topic_{std::move(topic)} {}
@@ -57,7 +69,7 @@ public:
         thread_.join();
     }
 
-    void publish(std::string_view data) {
+    void publish(std::string_view data) override {
         nats_.publish(topic_, data);
     }
 
@@ -67,7 +79,7 @@ private:
     std::string topic_;
 };
 
-class Subscriber {
+class Subscriber final : public ISubscriber {
 public:
     Subscriber(std::string address, std::string topic)
             : nats_{std::move(address)}, topic_{std::move(topic)} {}
@@ -77,7 +89,7 @@ public:
         thread_.join();
     }
 
-    void subscribe(std::function<void(std::string_view)> callback) {
+    void subscribe(std::function<void(std::string_view)> callback) override {
         nats_.subscribe(topic_, std::move(callback));
     }
 
@@ -90,7 +102,7 @@ private:
 void run_bench(IBenchmarkListener &listener, Options const opts) {
     listener.on_benchmark_start(opts);
 
-    std::vector<std::unique_ptr<Subscriber>> subscribers;
+    std::vector<std::unique_ptr<ISubscriber>> subscribers;
     std::vector<PartialResult> subscriber_results(opts.subscriber_count);
 
     listener.before_subscriber_start();
@@ -127,7 +139,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     auto payload = random_payload(opts.payload_size, opts.seed);
 
-    std::vector<std::unique_ptr<Publisher>> publishers;
+    std::vector<std::unique_ptr<IPublisher>> publishers;
     listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
         publishers.emplace_back(std::make_unique<Publisher>(opts.address, "bench"s));
