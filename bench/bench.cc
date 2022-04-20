@@ -59,6 +59,22 @@ public:
     virtual void subscribe(std::function<void(std::string_view)> on_data) = 0;
 };
 
+class IPublisherFactory {
+public:
+    virtual ~IPublisherFactory() = default;
+    [[nodiscard]] virtual std::unique_ptr<IPublisher> create(
+            std::string address,
+            std::string topic) const = 0;
+};
+
+class ISubscriberFactory {
+public:
+    virtual ~ISubscriberFactory() = default;
+    [[nodiscard]] virtual std::unique_ptr<ISubscriber> create(
+            std::string address,
+            std::string topic) const = 0;
+};
+
 class NatsukiPublisher final : public IPublisher {
 public:
     NatsukiPublisher(std::string address, std::string topic)
@@ -77,6 +93,15 @@ private:
     natsuki::Nats nats_;
     std::thread thread_{&natsuki::Nats::run, &nats_};
     std::string topic_;
+};
+
+class NatsukiPublisherFactory final : public IPublisherFactory {
+public:
+    [[nodiscard]] std::unique_ptr<IPublisher> create(
+            std::string address,
+            std::string topic) const override {
+        return std::make_unique<NatsukiPublisher>(std::move(address), std::move(topic));
+    }
 };
 
 class NatsukiSubscriber final : public ISubscriber {
@@ -99,7 +124,20 @@ private:
     std::string topic_;
 };
 
-void run_bench(IBenchmarkListener &listener, Options const opts) {
+class NatsukiSubscriberFactory final : public ISubscriberFactory {
+public:
+    [[nodiscard]] std::unique_ptr<ISubscriber> create(
+            std::string address,
+            std::string topic) const override {
+        return std::make_unique<NatsukiSubscriber>(std::move(address), std::move(topic));
+    }
+};
+
+void run_bench(
+        IBenchmarkListener &listener,
+        Options const opts,
+        IPublisherFactory const &publisher_factory,
+        ISubscriberFactory const &subscriber_factory) {
     listener.on_benchmark_start(opts);
 
     std::vector<std::unique_ptr<ISubscriber>> subscribers;
@@ -107,7 +145,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
 
     listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        subscribers.emplace_back(std::make_unique<NatsukiSubscriber>(opts.address, "bench"s));
+        subscribers.emplace_back(subscriber_factory.create(opts.address, "bench"s));
     }
     std::condition_variable subscribers_cv{};
     std::mutex subscribers_mtx{};
@@ -142,7 +180,7 @@ void run_bench(IBenchmarkListener &listener, Options const opts) {
     std::vector<std::unique_ptr<IPublisher>> publishers;
     listener.before_publisher_start();
     for (int i = 0; i < opts.publisher_count; ++i) {
-        publishers.emplace_back(std::make_unique<NatsukiPublisher>(opts.address, "bench"s));
+        publishers.emplace_back(publisher_factory.create(opts.address, "bench"s));
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
@@ -213,7 +251,9 @@ int main(int argc, char **argv) try {
             .parse(argc, argv);
 
     bench::StdoutListener listener{};
-    bench::run_bench(listener, std::move(opts));
+    bench::NatsukiPublisherFactory pub_factory{};
+    bench::NatsukiSubscriberFactory sub_factory{};
+    bench::run_bench(listener, std::move(opts), pub_factory, sub_factory);
 } catch (std::exception const &e) {
     std::cerr << e.what();
     throw;
