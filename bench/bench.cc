@@ -2,23 +2,20 @@
 //
 // SPDX-License-Identifier: MIT
 
-#include "bench/arg_parser.h"
+#include "bench/bench.h"
+
 #include "bench/ibenchmark_listener.h"
 #include "bench/ipublisher.h"
 #include "bench/isubscriber.h"
-#include "bench/natsuki_publisher.h"
-#include "bench/natsuki_subscriber.h"
 #include "bench/options.h"
 #include "bench/partial_result.h"
-#include "bench/stdout_listener.h"
 
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
-#include <exception>
+#include <cstring>
 #include <future>
-#include <iostream>
 #include <iterator>
 #include <list>
 #include <memory>
@@ -48,6 +45,8 @@ namespace {
     std::generate_n(begin(result), length, [&] { return chars[dist(gen)]; });
     return result;
 }
+
+} // namespace
 
 void run_bench(
         IBenchmarkListener &listener,
@@ -151,26 +150,4 @@ void run_bench(
     listener.on_benchmark_done(duration);
 }
 
-} // namespace
 } // namespace bench
-
-int main(int argc, char **argv) try {
-    bench::Options opts;
-
-    bench::ArgParser()
-            .argument("--msgs", opts.messages)
-            .argument("--size", opts.payload_size)
-            .argument("--seed", opts.seed)
-            .argument("--pub", opts.publisher_count)
-            .argument("--sub", opts.subscriber_count)
-            .positional(opts.address)
-            .parse(argc, argv);
-
-    bench::StdoutListener listener{};
-    bench::NatsukiPublisherFactory pub_factory{};
-    bench::NatsukiSubscriberFactory sub_factory{};
-    bench::run_bench(listener, std::move(opts), pub_factory, sub_factory);
-} catch (std::exception const &e) {
-    std::cerr << e.what();
-    throw;
-}

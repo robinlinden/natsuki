@@ -55,17 +55,29 @@ cc_library(
     deps = [":pubsub_interface"],
 )
 
-# Application
-cc_binary(
-    name = "bench",
+# Library
+cc_library(
+    name = "lib",
     srcs = ["bench.cc"],
+    hdrs = ["bench.h"],
+    visibility = ["//visibility:public"],
     deps = [
-        ":arg_parser",
         ":ibenchmark_listener",
-        ":natsuki_pubsub",
         ":options",
         ":partial_result",
         ":pubsub_interface",
+    ],
+)
+
+# Application
+cc_binary(
+    name = "bench",
+    srcs = ["main.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":arg_parser",
+        ":lib",
+        ":natsuki_pubsub",
         ":stdout_listener",
         "//natsuki",
     ],

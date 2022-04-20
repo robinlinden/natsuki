@@ -42,14 +42,30 @@ target_compile_features(${PROJECT_NAME}_example
 )
 
 # Bench
-add_executable(${PROJECT_NAME}_bench
+add_library(${PROJECT_NAME}_benchlib
     bench/bench.cc
+)
+
+target_include_directories(${PROJECT_NAME}_benchlib
+    PUBLIC .
+)
+
+target_link_libraries(${PROJECT_NAME}_benchlib
+    PRIVATE Threads::Threads
+)
+
+target_compile_features(${PROJECT_NAME}_benchlib
+    PUBLIC cxx_std_20
+)
+
+add_executable(${PROJECT_NAME}_bench
+    bench/main.cc
 )
 
 target_link_libraries(${PROJECT_NAME}_bench
     PRIVATE
         ${PROJECT_NAME}
-        Threads::Threads
+        ${PROJECT_NAME}_benchlib
 )
 
 target_compile_features(${PROJECT_NAME}_bench
