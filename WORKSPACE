@@ -17,3 +17,11 @@ http_archive(
     strip_prefix = "boringssl-ae0ce154470dc7d1e3073ba8adb1ef2b669c6471",
     url = "https://github.com/google/boringssl/archive/ae0ce154470dc7d1e3073ba8adb1ef2b669c6471.tar.gz",
 )
+
+http_archive(
+    name = "natsc",  # Apache-2.0
+    build_file = "//third_party:natsc.BUILD",
+    sha256 = "16e700d912034faefb235a955bd920cfe4d449a260d0371b9694d722eb617ae1",
+    strip_prefix = "nats.c-3.3.0",
+    url = "https://github.com/nats-io/nats.c/archive/v3.3.0.tar.gz",
+)

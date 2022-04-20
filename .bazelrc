@@ -35,6 +35,10 @@ build:linux --per_file_copt='external/asio[:/]@-Wno-sign-compare'
 build:linux --per_file_copt='external/asio[:/]@-Wno-undef'
 build:linux --per_file_copt='external/boringssl[:/]@-Wno-pedantic'
 build:linux --per_file_copt='external/boringssl[:/]@-Wno-unused-parameter'
+build:linux --per_file_copt='external/natsc[:/]@-Wno-double-promotion'
+build:linux --per_file_copt='external/natsc[:/]@-Wno-format-nonliteral'
+build:linux --per_file_copt='external/natsc[:/]@-Wno-missing-declarations'
+build:linux --per_file_copt='external/natsc[:/]@-Wno-unused-parameter'
 
 build:gcc --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
 
@@ -47,6 +51,14 @@ build:windows --per_file_copt='external/boringssl[:/]@/wd4127' # C4127: conditio
 build:windows --per_file_copt='external/boringssl[:/]@/wd4244' # C4244: '=': conversion from 'SOCKET' to 'int', possible loss of data
 build:windows --per_file_copt='external/boringssl[:/]@/wd4267' # C4267: '=': conversion from 'size_t' to 'int', possible loss of data
 build:windows --per_file_copt='external/boringssl[:/]@/wd4706' # C4706: assignment within conditional expression
+build:windows --per_file_copt='external/natsc[:/]@/wd4005' # C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+build:windows --per_file_copt='external/natsc[:/]@/wd4100' # C4100: 'respInboxSize': unreferenced formal parameter
+build:windows --per_file_copt='external/natsc[:/]@/wd4127' # C4127: conditional expression is constant
+build:windows --per_file_copt='external/natsc[:/]@/wd4132' # C4132: 'gf0': const object should be initialized
+build:windows --per_file_copt='external/natsc[:/]@/wd4244' # C4244: '=': conversion from 'int' to 'char', possible loss of data
+build:windows --per_file_copt='external/natsc[:/]@/wd4310' # C4310: cast truncates constant value
+build:windows --per_file_copt='external/natsc[:/]@/wd4701' # C4701: potentially uninitialized local variable 'buf' used
+build:windows --per_file_copt='external/natsc[:/]@/wd4706' # C4706: assignment within conditional expression
 
 # Special build options
 # =========================================================

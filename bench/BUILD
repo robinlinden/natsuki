@@ -55,6 +55,18 @@ cc_library(
     deps = [":pubsub_interface"],
 )
 
+# nats.c implementation
+cc_library(
+    name = "natsc_pubsub",
+    srcs = glob(["natsc_*.cc"]),
+    hdrs = glob(["natsc_*.h"]),
+    visibility = ["//visibility:public"],
+    deps = [
+        ":pubsub_interface",
+        "@natsc",
+    ],
+)
+
 # Library
 cc_library(
     name = "lib",
