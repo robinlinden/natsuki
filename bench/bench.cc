@@ -4,18 +4,20 @@
 
 #include "bench/arg_parser.h"
 #include "bench/ibenchmark_listener.h"
+#include "bench/ipublisher.h"
+#include "bench/isubscriber.h"
+#include "bench/natsuki_publisher.h"
+#include "bench/natsuki_subscriber.h"
 #include "bench/options.h"
 #include "bench/partial_result.h"
 #include "bench/stdout_listener.h"
-
-#include "natsuki/natsuki.h"
 
 #include <algorithm>
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
 #include <exception>
-#include <functional>
+#include <future>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -46,92 +48,6 @@ namespace {
     std::generate_n(begin(result), length, [&] { return chars[dist(gen)]; });
     return result;
 }
-
-class IPublisher {
-public:
-    virtual ~IPublisher() = default;
-    virtual void publish(std::string_view data) = 0;
-};
-
-class ISubscriber {
-public:
-    virtual ~ISubscriber() = default;
-    virtual void subscribe(std::function<void(std::string_view)> on_data) = 0;
-};
-
-class IPublisherFactory {
-public:
-    virtual ~IPublisherFactory() = default;
-    [[nodiscard]] virtual std::unique_ptr<IPublisher> create(
-            std::string address,
-            std::string topic) const = 0;
-};
-
-class ISubscriberFactory {
-public:
-    virtual ~ISubscriberFactory() = default;
-    [[nodiscard]] virtual std::unique_ptr<ISubscriber> create(
-            std::string address,
-            std::string topic) const = 0;
-};
-
-class NatsukiPublisher final : public IPublisher {
-public:
-    NatsukiPublisher(std::string address, std::string topic)
-            : nats_{std::move(address)}, topic_{std::move(topic)} {}
-
-    ~NatsukiPublisher() {
-        nats_.shutdown();
-        thread_.join();
-    }
-
-    void publish(std::string_view data) override {
-        nats_.publish(topic_, data);
-    }
-
-private:
-    natsuki::Nats nats_;
-    std::thread thread_{&natsuki::Nats::run, &nats_};
-    std::string topic_;
-};
-
-class NatsukiPublisherFactory final : public IPublisherFactory {
-public:
-    [[nodiscard]] std::unique_ptr<IPublisher> create(
-            std::string address,
-            std::string topic) const override {
-        return std::make_unique<NatsukiPublisher>(std::move(address), std::move(topic));
-    }
-};
-
-class NatsukiSubscriber final : public ISubscriber {
-public:
-    NatsukiSubscriber(std::string address, std::string topic)
-            : nats_{std::move(address)}, topic_{std::move(topic)} {}
-
-    ~NatsukiSubscriber() {
-        nats_.shutdown();
-        thread_.join();
-    }
-
-    void subscribe(std::function<void(std::string_view)> callback) override {
-        nats_.subscribe(topic_, std::move(callback));
-    }
-
-private:
-    natsuki::Nats nats_;
-    std::thread thread_{&natsuki::Nats::run, &nats_};
-    std::string topic_;
-};
-
-class NatsukiSubscriberFactory final : public ISubscriberFactory {
-public:
-    [[nodiscard]] std::unique_ptr<ISubscriber> create(
-            std::string address,
-            std::string topic) const override {
-        return std::make_unique<NatsukiSubscriber>(std::move(address), std::move(topic));
-    }
-};
 
 void run_bench(
         IBenchmarkListener &listener,

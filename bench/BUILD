@@ -37,6 +37,24 @@ cc_library(
     deps = [":ibenchmark_listener"],
 )
 
+# Benchmark interfaces
+cc_library(
+    name = "pubsub_interface",
+    hdrs = [
+        "ipublisher.h",
+        "isubscriber.h",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Natsuki implementation
+cc_library(
+    name = "natsuki_pubsub",
+    hdrs = glob(["natsuki_*.h"]),
+    visibility = ["//visibility:public"],
+    deps = [":pubsub_interface"],
+)
+
 # Application
 cc_binary(
     name = "bench",
@@ -44,8 +62,10 @@ cc_binary(
     deps = [
         ":arg_parser",
         ":ibenchmark_listener",
+        ":natsuki_pubsub",
         ":options",
         ":partial_result",
+        ":pubsub_interface",
         ":stdout_listener",
         "//natsuki",
     ],
