@@ -27,7 +27,7 @@ jobs:
         chmod +x nats-server-$NATS_VERSION-linux-amd64/nats-server
         ./nats-server-$NATS_VERSION-linux-amd64/nats-server --debug >>nats.log 2>&1 &
       env:
-        NATS_VERSION: v2.8.0
+        NATS_VERSION: v2.8.1
     - run: bazel run example:natsuki ${{ matrix.bazel }} && cat nats.log && :>nats.log
     - run: bazel run bench ${{ matrix.bazel }} -- --msgs 100000 --size 512 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
