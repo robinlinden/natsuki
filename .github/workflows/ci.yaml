@@ -11,13 +11,14 @@ jobs:
           cc: gcc-10
           cxx: g++-10
           bazel: --config gcc
-        - name: linux-clang
-          cc: clang-12
-          cxx: clang++-12
         - name: linux-clang-asan
           cc: clang-12
           cxx: clang++-12
           bazel: --config asan
+        - name: linux-clang-ubsan
+          cc: clang-12
+          cxx: clang++-12
+          bazel: --config ubsan
     steps:
     - uses: actions/checkout@v3
     - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
