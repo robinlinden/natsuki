@@ -15,6 +15,10 @@ jobs:
           cc: clang-12
           cxx: clang++-12
           bazel: --config asan
+        - name: linux-clang-tsan
+          cc: clang-12
+          cxx: clang++-12
+          bazel: --config tsan
         - name: linux-clang-ubsan
           cc: clang-12
           cxx: clang++-12
