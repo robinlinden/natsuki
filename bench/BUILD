@@ -31,8 +31,8 @@ cc_library(
 )
 
 cc_library(
-    name = "stdout_listener",
-    hdrs = ["stdout_listener.h"],
+    name = "plain_text_reporter",
+    hdrs = ["plain_text_reporter.h"],
     visibility = ["//visibility:public"],
     deps = [":ibenchmark_listener"],
 )
@@ -90,7 +90,7 @@ cc_binary(
         ":arg_parser",
         ":lib",
         ":natsuki_pubsub",
-        ":stdout_listener",
+        ":plain_text_reporter",
         "//natsuki",
     ],
 )

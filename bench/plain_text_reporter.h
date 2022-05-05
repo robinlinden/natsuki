@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-#ifndef NATSUKI_BENCH_STDOUT_LISTENER_H_
-#define NATSUKI_BENCH_STDOUT_LISTENER_H_
+#ifndef NATSUKI_BENCH_PLAIN_TEXT_REPORTER_H_
+#define NATSUKI_BENCH_PLAIN_TEXT_REPORTER_H_
 
 #include "bench/ibenchmark_listener.h"
 
@@ -14,7 +14,7 @@
 
 namespace bench {
 
-class StdoutListener final : public IBenchmarkListener {
+class PlainTextReporter final : public IBenchmarkListener {
 public:
     void on_benchmark_start(Options const &opts) override {
         opts_ = opts;

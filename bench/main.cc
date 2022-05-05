@@ -7,7 +7,7 @@
 #include "bench/natsuki_publisher.h"
 #include "bench/natsuki_subscriber.h"
 #include "bench/options.h"
-#include "bench/stdout_listener.h"
+#include "bench/plain_text_reporter.h"
 
 #include <exception>
 #include <iostream>
@@ -25,7 +25,7 @@ int main(int argc, char **argv) try {
             .positional(opts.address)
             .parse(argc, argv);
 
-    bench::StdoutListener listener{};
+    bench::PlainTextReporter listener{};
     bench::NatsukiPublisherFactory pub_factory{};
     bench::NatsukiSubscriberFactory sub_factory{};
     bench::run_bench(listener, std::move(opts), pub_factory, sub_factory);
