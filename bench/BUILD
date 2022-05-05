@@ -94,3 +94,18 @@ cc_binary(
         "//natsuki",
     ],
 )
+
+# TODO(robinlinden): Merge these applications.
+cc_binary(
+    name = "natsc",
+    srcs = ["main.cc"],
+    local_defines = ["NATSC_BENCH"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":arg_parser",
+        ":lib",
+        ":natsc_pubsub",
+        ":plain_text_reporter",
+        "//natsuki",
+    ],
+)
