@@ -35,6 +35,7 @@ jobs:
         NATS_VERSION: v2.8.2
     - run: bazel run example:natsuki ${{ matrix.bazel }} && cat nats.log && :>nats.log
     - run: bazel run bench ${{ matrix.bazel }} -- --msgs 10000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+    - run: bazel run bench:natsc ${{ matrix.bazel }} -- --msgs 10000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   windows-msvc:
     runs-on: windows-2022
