@@ -31,6 +31,13 @@ cc_library(
 )
 
 cc_library(
+    name = "json_reporter",
+    hdrs = ["json_reporter.h"],
+    visibility = ["//visibility:public"],
+    deps = [":ibenchmark_listener"],
+)
+
+cc_library(
     name = "plain_text_reporter",
     hdrs = ["plain_text_reporter.h"],
     visibility = ["//visibility:public"],
