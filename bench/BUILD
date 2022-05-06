@@ -95,6 +95,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":arg_parser",
+        ":json_reporter",
         ":lib",
         ":natsuki_pubsub",
         ":plain_text_reporter",
@@ -110,6 +111,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":arg_parser",
+        ":json_reporter",
         ":lib",
         ":natsc_pubsub",
         ":plain_text_reporter",
