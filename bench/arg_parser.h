@@ -30,6 +30,13 @@ public:
         return *this;
     }
 
+    [[nodiscard]] ArgParser &argument(std::string_view arg, bool &was_passed) {
+        store_true_[arg] = [&was_passed]() {
+            was_passed = true;
+        };
+        return *this;
+    }
+
     [[nodiscard]] ArgParser &positional(std::string &out) {
         positional_.push_back([&out](std::string_view argument) {
             out = std::string{argument};
@@ -51,6 +58,11 @@ public:
                 continue;
             }
 
+            if (store_true_.contains(arg)) {
+                store_true_.at(arg)();
+                continue;
+            }
+
             int maybe_positional = i + static_cast<int>(positional_.size()) - argc;
             if (maybe_positional >= 0 && maybe_positional < static_cast<int>(positional_.size())) {
                 positional_[maybe_positional](arg);
@@ -65,6 +77,7 @@ public:
 
 private:
     std::map<std::string_view, std::function<void(std::string_view)>> long_;
+    std::map<std::string_view, std::function<void()>> store_true_;
     std::vector<std::function<void(std::string_view)>> positional_;
 };
 
