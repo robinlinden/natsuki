@@ -7,7 +7,7 @@ test --test_output=errors
 # Compiler configuration
 # =========================================================
 
-build:linux --cxxopt='-std=c++2a'
+build:linux --cxxopt='-std=c++20'
 build:linux --copt='-Wall'
 build:linux --copt='-Wextra'
 build:linux --copt='-pedantic-errors'
