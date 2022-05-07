@@ -5,8 +5,6 @@
 #ifndef NATSUKI_BENCH_OPTIONS_H_
 #define NATSUKI_BENCH_OPTIONS_H_
 
-#include "bench/options.h"
-
 #include <ctime>
 #include <string>
 
@@ -20,7 +18,6 @@ struct Options {
     int publisher_count{1};
     int subscriber_count{0};
 };
-
 
 } // namespace bench
 
