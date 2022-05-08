@@ -126,7 +126,17 @@ void Nats::on_read(asio::error_code const &ec, std::size_t bytes_transferred) {
         std::from_chars(data.data() + sid_location, data.data() + data.size(), sid);
 
         // Get the payload data.
-        std::size_t payload_length = asio::read_until(socket_, buf_, "\r\n");
+        std::size_t payload_length = [&] {
+            auto start = data.find_last_of(' ') + 1;
+            int length = -1;
+            std::from_chars(data.data() + start, data.data() + data.size(), length);
+            return length + std::strlen("\r\n");
+        }();
+
+        if (buf_.size() < payload_length) {
+            asio::read(socket_, buf_, asio::transfer_at_least(payload_length - buf_.size()));
+        }
+
         std::string payload{
             asio::buffers_begin(buf_.data()),
             asio::buffers_begin(buf_.data()) + payload_length - std::strlen("\r\n")};

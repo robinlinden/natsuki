@@ -19,6 +19,13 @@ http_archive(
 )
 
 http_archive(
+    name = "hastur",  # BSD-2-Clause
+    sha256 = "b81ae14d9862476c2da799984529b6dd9c6311b0d8f176d047c7149a9195d38c",
+    strip_prefix = "hastur-25c528e1c9cf22ff56cbaf5a686d7cfa43a94313",
+    url = "https://github.com/robinlinden/hastur/archive/25c528e1c9cf22ff56cbaf5a686d7cfa43a94313.tar.gz",
+)
+
+http_archive(
     name = "natsc",  # Apache-2.0
     build_file = "//third_party:natsc.BUILD",
     sha256 = "16e700d912034faefb235a955bd920cfe4d449a260d0371b9694d722eb617ae1",
