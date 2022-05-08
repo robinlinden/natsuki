@@ -14,8 +14,14 @@ cc_library(
 )
 
 cc_library(
-    name = "partial_result",
-    hdrs = ["partial_result.h"],
+    name = "publish_result",
+    hdrs = ["publish_result.h"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "subscribe_result",
+    hdrs = ["subscribe_result.h"],
     visibility = ["//visibility:public"],
 )
 
@@ -26,7 +32,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":options",
-        ":partial_result",
+        ":publish_result",
+        ":subscribe_result",
     ],
 )
 
@@ -83,8 +90,9 @@ cc_library(
     deps = [
         ":ibenchmark_listener",
         ":options",
-        ":partial_result",
+        ":publish_result",
         ":pubsub_interface",
+        ":subscribe_result",
     ],
 )
 

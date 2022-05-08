@@ -8,7 +8,8 @@
 #include "bench/ipublisher.h"
 #include "bench/isubscriber.h"
 #include "bench/options.h"
-#include "bench/partial_result.h"
+#include "bench/publish_result.h"
+#include "bench/subscribe_result.h"
 
 #include <algorithm>
 #include <chrono>
@@ -56,7 +57,7 @@ void run_bench(
     listener.on_benchmark_start(opts);
 
     std::vector<std::unique_ptr<ISubscriber>> subscribers;
-    std::vector<PartialResult> subscriber_results(opts.subscriber_count);
+    std::vector<SubscribeResult> subscriber_results(opts.subscriber_count);
 
     listener.before_subscriber_start();
     for (int i = 0; i < opts.subscriber_count; ++i) {
@@ -99,7 +100,7 @@ void run_bench(
     }
 
     auto const start = std::chrono::high_resolution_clock::now();
-    std::vector<std::future<PartialResult>> runners;
+    std::vector<std::future<PublishResult>> runners;
     runners.reserve(opts.publisher_count);
     for (auto &publisher : publishers) {
         runners.push_back(std::async(std::launch::async, [&] {
@@ -112,7 +113,7 @@ void run_bench(
 
             auto const my_end = std::chrono::high_resolution_clock::now();
 
-            return PartialResult{
+            return PublishResult{
                 .start_time = my_start,
                 .end_time = my_end,
                 .messages = my_msgs,
@@ -139,7 +140,7 @@ void run_bench(
         publishers.pop_back();
     }
 
-    std::vector<PartialResult> publisher_results{};
+    std::vector<PublishResult> publisher_results{};
     publisher_results.reserve(runners.size());
     std::transform(
             runners.begin(), runners.end(), std::back_inserter(publisher_results),

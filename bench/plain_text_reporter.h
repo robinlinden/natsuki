@@ -41,7 +41,7 @@ public:
                 << opts_.messages / opts_.publisher_count << " messages each.\n";
     }
 
-    void on_publish_done(std::vector<PartialResult> const &results) override {
+    void on_publish_done(std::vector<PublishResult> const &results) override {
         for (std::size_t i = 0; i < results.size(); ++i) {
             auto const res = results[i];
             auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
@@ -52,7 +52,7 @@ public:
         }
     }
 
-    void on_subscribe_done(std::vector<PartialResult> const &results) override {
+    void on_subscribe_done(std::vector<SubscribeResult> const &results) override {
         for (int i = 0; i < opts_.subscriber_count; ++i) {
             auto const res = results[i];
             auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);

@@ -33,7 +33,7 @@ public:
     void before_subscriber_start() override {}
     void before_publisher_start() override {}
 
-    void on_publish_done(std::vector<PartialResult> const &results) override {
+    void on_publish_done(std::vector<PublishResult> const &results) override {
         ss_ << "\"publish_results\":" << '[';
         for (std::size_t i = 0; i < results.size(); ++i) {
             if (i > 0) {
@@ -45,7 +45,7 @@ public:
         ss_ << "],";
     }
 
-    void on_subscribe_done(std::vector<PartialResult> const &results) override {
+    void on_subscribe_done(std::vector<SubscribeResult> const &results) override {
         ss_ << "\"subscribe_results\":" << '[';
         for (std::size_t i = 0; i < results.size(); ++i) {
             if (i > 0) {
@@ -63,7 +63,13 @@ public:
     }
 
 private:
-    void to_json(std::ostream &os, PartialResult const &res) {
+    void to_json(std::ostream &os, PublishResult const &res) {
+        os << "{\"start_time\":" << res.start_time.time_since_epoch().count() << ','
+                << "\"end_time\":" << res.end_time.time_since_epoch().count() << ','
+                << "\"messages\":" << res.messages << '}';
+    }
+
+    void to_json(std::ostream &os, SubscribeResult const &res) {
         os << "{\"start_time\":" << res.start_time.time_since_epoch().count() << ','
                 << "\"end_time\":" << res.end_time.time_since_epoch().count() << ','
                 << "\"messages\":" << res.messages << '}';
