@@ -47,6 +47,14 @@ namespace {
     return result;
 }
 
+constexpr auto as_us(auto const duration) {
+    return std::chrono::duration_cast<std::chrono::microseconds>(duration);
+}
+
+auto time_since_epoch() {
+    return std::chrono::high_resolution_clock::now().time_since_epoch();
+}
+
 } // namespace
 
 void run_bench(
@@ -106,9 +114,18 @@ void run_bench(
         runners.push_back(std::async(std::launch::async, [&] {
             auto const my_start = std::chrono::high_resolution_clock::now();
             auto const my_msgs = opts.messages / opts.publisher_count;
+            auto const time_per_message = opts.messages_per_second > 0
+                    ? as_us(std::chrono::seconds(1)) / opts.messages_per_second
+                    : std::chrono::seconds(0);
 
             for (int j = 0; j < my_msgs; ++j) {
+                auto sent = as_us(time_since_epoch()).count();
                 publisher->publish(payload);
+
+                auto next = sent + time_per_message.count();
+                while (as_us(time_since_epoch()).count() < next) {
+                    std::this_thread::yield();
+                }
             }
 
             auto const my_end = std::chrono::high_resolution_clock::now();

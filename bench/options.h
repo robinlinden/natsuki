@@ -17,6 +17,7 @@ struct Options {
     unsigned seed{static_cast<unsigned>(std::time(nullptr))};
     int publisher_count{1};
     int subscriber_count{0};
+    unsigned messages_per_second{};
 };
 
 } // namespace bench

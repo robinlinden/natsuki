@@ -30,6 +30,7 @@ int main(int argc, char **argv) try {
             .argument("--seed", opts.seed)
             .argument("--pub", opts.publisher_count)
             .argument("--sub", opts.subscriber_count)
+            .argument("--msgs-per-second", opts.messages_per_second)
             .argument("--json", want_json)
             .positional(opts.address)
             .parse(argc, argv);
