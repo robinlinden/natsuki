@@ -28,7 +28,7 @@ target_compile_features(${PROJECT_NAME}
 find_package(Threads REQUIRED)
 
 add_executable(${PROJECT_NAME}_example
-    example/natsuki.cc
+    natsuki/natsuki_example.cc
 )
 
 target_link_libraries(${PROJECT_NAME}_example

@@ -1,4 +1,10 @@
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+cc_binary(
+    name = "natsuki_example",
+    srcs = ["natsuki_example.cc"],
+    deps = [":natsuki"],
+)
 
 cc_library(
     name = "natsuki",

@@ -26,8 +26,6 @@ build:linux --cxxopt='-Woverloaded-virtual'
 
 build:linux --per_file_copt='bench[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='bench[:/]@-Wno-shadow' # asio leaks this into our code.
-build:linux --per_file_copt='example[:/]@-Wno-undef' # asio leaks this into our code.
-build:linux --per_file_copt='example[:/]@-Wno-shadow' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
