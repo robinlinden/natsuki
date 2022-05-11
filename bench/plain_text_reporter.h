@@ -57,9 +57,23 @@ public:
             auto const res = results[i];
             auto const duration = std::chrono::duration_cast<std::chrono::milliseconds>(res.end_time - res.start_time);
             auto const msgs_per_second = static_cast<float>(res.messages) / duration.count() * 1000; // msgs/ms -> msgs/s
+            auto const [min, max] = std::minmax_element(
+                    begin(res.latencies), end(res.latencies),
+                    [](auto const &a, auto const &b) { return a.first < b.first; });
+            auto const average = [&] {
+                unsigned long long total{0};
+                for (auto const &v : res.latencies) {
+                    total += v.first * v.second;
+                }
+                return total / res.messages;
+            }();
             std::cout << std::fixed << "Subscriber " << i << " handled " << res.messages << " messages in "
                     << duration.count() << "ms. (" << std::setprecision(0) << msgs_per_second << " msgs/s, "
-                    << std::setprecision(1) << opts_.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n";
+                    << std::setprecision(1) << opts_.payload_size * msgs_per_second / 1024.f / 1024.f << "MB/s)\n"
+                    << "Subscriber " << i
+                    << " latency [min " << min->first
+                    << "us average " << average
+                    << "us max " << max->first << "us]\n";
         }
         std::cout << '\n';
     }
