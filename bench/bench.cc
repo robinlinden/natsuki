@@ -22,6 +22,8 @@
 #include <memory>
 #include <mutex>
 #include <random>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -62,6 +64,14 @@ void run_bench(
         Options const opts,
         IPublisherFactory const &publisher_factory,
         ISubscriberFactory const &subscriber_factory) {
+    if (static_cast<std::size_t>(opts.payload_size)
+            < sizeof(std::chrono::high_resolution_clock::now().time_since_epoch().count())) {
+        std::stringstream ss;
+        ss << "Payload size must be at least "
+                << sizeof(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+        throw std::invalid_argument(ss.str());
+    }
+
     listener.on_benchmark_start(opts);
 
     std::vector<std::unique_ptr<ISubscriber>> subscribers;
@@ -76,12 +86,17 @@ void run_bench(
     std::size_t subscribers_done{0};
 
     for (int i = 0; i < opts.subscriber_count; ++i) {
-        subscribers[i]->subscribe([&, msg = 0, msgs = opts.messages, idx = i](auto) mutable {
+        subscribers[i]->subscribe([&, msg = 0, msgs = opts.messages, idx = i](auto data) mutable {
             if (msg == 0) {
                 subscriber_results[idx].start_time = std::chrono::high_resolution_clock::now();
             }
 
             msg += 1;
+
+            auto received = as_us(time_since_epoch()).count();
+            decltype(as_us(time_since_epoch()).count()) sent;
+            std::memcpy(&sent, data.data(), sizeof(sent));
+            subscriber_results[idx].latencies[static_cast<unsigned>(received - sent)] += 1;
 
             if (msg == msgs) {
                 subscriber_results[idx].end_time = std::chrono::high_resolution_clock::now();
@@ -111,7 +126,7 @@ void run_bench(
     std::vector<std::future<PublishResult>> runners;
     runners.reserve(opts.publisher_count);
     for (auto &publisher : publishers) {
-        runners.push_back(std::async(std::launch::async, [&] {
+        runners.push_back(std::async(std::launch::async, [&, payload]() mutable {
             auto const my_start = std::chrono::high_resolution_clock::now();
             auto const my_msgs = opts.messages / opts.publisher_count;
             auto const time_per_message = opts.messages_per_second > 0
@@ -120,6 +135,7 @@ void run_bench(
 
             for (int j = 0; j < my_msgs; ++j) {
                 auto sent = as_us(time_since_epoch()).count();
+                std::memcpy(payload.data(), &sent, sizeof(sent));
                 publisher->publish(payload);
 
                 auto next = sent + time_per_message.count();
