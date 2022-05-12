@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
-    - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local
+    - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local && echo "build -c opt" >>.bazelrc.local
     - run: bazel build ...
     - run: |
         wget -qO- https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-linux-amd64.tar.gz | tar -xvz
