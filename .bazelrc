@@ -38,7 +38,10 @@ build:linux --per_file_copt='external/natsc[:/]@-Wno-format-nonliteral'
 build:linux --per_file_copt='external/natsc[:/]@-Wno-missing-declarations'
 build:linux --per_file_copt='external/natsc[:/]@-Wno-unused-parameter'
 
+build:gcc --per_file_copt='external/asio[:/]@-Wno-null-dereference'
 build:gcc --per_file_copt='external/boringssl[:/]@-Wno-cast-function-type'
+build:gcc --per_file_copt='external/boringssl[:/]@-Wno-null-dereference'
+build:gcc --per_file_copt='external/natsc[:/]@-Wno-null-dereference'
 
 build:windows --copt='/std:c++20'
 build:windows --copt='/W4' # More warnings.
