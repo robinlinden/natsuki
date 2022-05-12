@@ -12,12 +12,12 @@ namespace bench {
 
 struct Options {
     std::string address{"localhost"};
-    int messages{1'000'000};
-    int payload_size{10};
+    int messages{250'000};
+    int payload_size{1024};
     unsigned seed{static_cast<unsigned>(std::time(nullptr))};
     int publisher_count{1};
-    int subscriber_count{0};
-    unsigned messages_per_second{};
+    int subscriber_count{1};
+    unsigned messages_per_second{100'000};
 };
 
 } // namespace bench
