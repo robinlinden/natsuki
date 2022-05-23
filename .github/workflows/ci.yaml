@@ -33,7 +33,7 @@ jobs:
         chmod +x nats-server-$NATS_VERSION-linux-amd64/nats-server
         ./nats-server-$NATS_VERSION-linux-amd64/nats-server --debug >>nats.log 2>&1 &
       env:
-        NATS_VERSION: v2.8.2
+        NATS_VERSION: v2.8.3
     - run: bazel test ... && cat nats.log && :>nats.log
     - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
     - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
