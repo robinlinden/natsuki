@@ -7,37 +7,37 @@ jobs:
     strategy:
       matrix:
         include:
-        - name: linux-gcc
-          cc: gcc-10
-          cxx: g++-10
-          bazel: --config gcc
-        - name: linux-clang-asan
-          cc: clang-12
-          cxx: clang++-12
-          bazel: --config asan
-        - name: linux-clang-tsan
-          cc: clang-12
-          cxx: clang++-12
-          bazel: --config tsan
-        - name: linux-clang-ubsan
-          cc: clang-12
-          cxx: clang++-12
-          bazel: --config ubsan
+          - name: linux-gcc
+            cc: gcc-10
+            cxx: g++-10
+            bazel: --config gcc
+          - name: linux-clang-asan
+            cc: clang-12
+            cxx: clang++-12
+            bazel: --config asan
+          - name: linux-clang-tsan
+            cc: clang-12
+            cxx: clang++-12
+            bazel: --config tsan
+          - name: linux-clang-ubsan
+            cc: clang-12
+            cxx: clang++-12
+            bazel: --config ubsan
     steps:
-    - uses: actions/checkout@v3
-    - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
-    - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local && echo "build -c opt" >>.bazelrc.local
-    - run: bazel build ...
-    - run: |
-        wget -qO- https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-linux-amd64.tar.gz | tar -xvz
-        chmod +x nats-server-$NATS_VERSION-linux-amd64/nats-server
-        ./nats-server-$NATS_VERSION-linux-amd64/nats-server --debug >>nats.log 2>&1 &
-      env:
-        NATS_VERSION: v2.8.4
-    - run: bazel test ... && cat nats.log && :>nats.log
-    - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
-    - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
-    - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+      - uses: actions/checkout@v3
+      - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
+      - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local && echo "build -c opt" >>.bazelrc.local
+      - run: bazel build ...
+      - run: |
+          wget -qO- https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-linux-amd64.tar.gz | tar -xvz
+          chmod +x nats-server-$NATS_VERSION-linux-amd64/nats-server
+          ./nats-server-$NATS_VERSION-linux-amd64/nats-server --debug >>nats.log 2>&1 &
+        env:
+          NATS_VERSION: v2.8.4
+      - run: bazel test ... && cat nats.log && :>nats.log
+      - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
+      - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+      - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   windows-msvc:
     runs-on: windows-2022
@@ -45,32 +45,32 @@ jobs:
       run:
         shell: bash
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: bazel build ...
+      - uses: actions/checkout@v3
+      - name: Build
+        run: bazel build ...
 
   buildifier:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Install
-      run: |
-        wget --output-document=buildifier https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-amd64
-        sudo chmod +x buildifier
-    - name: Check
-      run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
+      - uses: actions/checkout@v3
+      - name: Install
+        run: |
+          wget --output-document=buildifier https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-amd64
+          sudo chmod +x buildifier
+      - name: Check
+        run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
 
   linux-cmake:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
-    - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
-    # Test the oldest supported CMake version.
-    - run: pip install cmake==3.14.4.post1 && cmake --version
-    - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
-    - run: cmake --build build
-    # Test the newest supported CMake version.
-    - run: rm -rf build
-    - run: pip install cmake==3.22.4 && cmake --version
-    - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
-    - run: cmake --build build
+      - uses: actions/checkout@v3
+      - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
+      # Test the oldest supported CMake version.
+      - run: pip install cmake==3.14.4.post1 && cmake --version
+      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
+      - run: cmake --build build
+      # Test the newest supported CMake version.
+      - run: rm -rf build
+      - run: pip install cmake==3.22.4 && cmake --version
+      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
+      - run: cmake --build build
