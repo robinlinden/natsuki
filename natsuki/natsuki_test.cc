@@ -10,6 +10,11 @@
 #include <thread>
 
 int main() {
+    etest::test("destruction without a connection", [] {
+        natsuki::Nats nats{"localhost"};
+    });
+
+    // We'll share this NATS client for the rest of the tests.
     natsuki::Nats nats{"localhost"};
     std::thread nats_thread{&natsuki::Nats::run, &nats};
 
