@@ -1,5 +1,7 @@
 name: ci
 on: [push, pull_request]
+env:
+  NATS_VERSION: v2.8.4
 jobs:
   linux-ci:
     name: ${{ matrix.name }}
@@ -32,8 +34,6 @@ jobs:
           wget -qO- https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-linux-amd64.tar.gz | tar -xvz
           chmod +x nats-server-$NATS_VERSION-linux-amd64/nats-server
           ./nats-server-$NATS_VERSION-linux-amd64/nats-server --debug >>nats.log 2>&1 &
-        env:
-          NATS_VERSION: v2.8.4
       - run: bazel test ... && cat nats.log && :>nats.log
       - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
       - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
@@ -48,6 +48,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build
         run: bazel build ...
+      - run: |
+          curl --location https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-windows-amd64.tar.gz | tar -xvz
+          ./nats-server-$NATS_VERSION-windows-amd64/nats-server --debug >>nats.log 2>&1 &
+      - run: bazel test ... && cat nats.log && :>nats.log
+      - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
+      - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+      - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   buildifier:
     runs-on: ubuntu-20.04
