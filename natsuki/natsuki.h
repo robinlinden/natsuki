@@ -39,6 +39,11 @@ public:
     explicit Nats(std::string address, std::uint16_t port = 4222)
             : address_{std::move(address)}, port_{port} {}
 
+    ~Nats() {
+        asio::error_code ec;
+        socket_.shutdown(asio::ip::tcp::socket::shutdown_both, ec);
+    }
+
     // Run the internal asio io context. Will return only once the io context
     // has been stopped.
     void run();
