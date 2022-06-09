@@ -4,6 +4,12 @@
 build --enable_platform_specific_config
 test --test_output=errors
 
+# Bazel deprecations
+# =========================================================
+# See: https://docs.bazel.build/versions/main/backward-compatibility.html
+
+build --incompatible_disallow_empty_glob
+
 # Compiler configuration
 # =========================================================
 
