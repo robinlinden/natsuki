@@ -32,3 +32,14 @@ http_archive(
     strip_prefix = "nats.c-3.3.0",
     url = "https://github.com/nats-io/nats.c/archive/v3.3.0.tar.gz",
 )
+
+# docker run --init -p 7447:7447/tcp -p 8000:8000/tcp eclipse/zenoh:0.5.0-beta.9
+# bazel run @zenoh-pico//:zn_sub -- "/demo/example/**" tcp/localhost:7447
+# bazel run @zenoh-pico//:zn_pub -- "/demo/example/zenoh-pico-pub" "Pub from pico!" tcp/localhost:7447
+http_archive(
+    name = "zenoh-pico",  # Apache-2.0
+    build_file = "//third_party:zenoh-pico.BUILD",
+    sha256 = "7430e3bbd63ea8322491c6e5ade3da4e28b53cabef8cb39529f41dc1254194f3",
+    strip_prefix = "zenoh-pico-0.5.0-beta.9",
+    url = "https://github.com/eclipse-zenoh/zenoh-pico/archive/0.5.0-beta.9.tar.gz",
+)
