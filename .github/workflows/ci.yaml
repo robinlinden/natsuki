@@ -38,6 +38,8 @@ jobs:
       - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
       - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
       - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+      # Check that ported dependencies' binaries and misc bits build.
+      - run: bazel build @zenoh-pico//...
 
   windows-msvc:
     runs-on: windows-2022
