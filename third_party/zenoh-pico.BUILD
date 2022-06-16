@@ -11,11 +11,16 @@ cc_library(
         "@platforms//os:linux": glob(["src/system/unix/*.c"]),
     }),
     hdrs = glob(["include/**/*.h"]),
+    copts = select({
+        "@platforms//os:linux": ["-pthread"],
+        "@platforms//os:windows": [],
+    }),
     defines = ["ZENOH_DEBUG=0"] + select({
         "@platforms//os:linux": ["ZENOH_LINUX"],
     }),
     linkopts = select({
-        "@platforms//os:linux": ["-lpthread"],
+        "@platforms//os:linux": ["-pthread"],
+        "@platforms//os:windows": [],
     }),
     strip_include_prefix = "include",
     target_compatible_with = ["@platforms//os:linux"],
