@@ -13,9 +13,9 @@ http_archive(
 
 http_archive(
     name = "boringssl",  # OpenSSL + ISC
-    sha256 = "6f2b0390dc23be79268da435b276b0ecfffd1adeaf9868d6a68860f9b9adbcb7",
-    strip_prefix = "boringssl-ae0ce154470dc7d1e3073ba8adb1ef2b669c6471",
-    url = "https://github.com/google/boringssl/archive/ae0ce154470dc7d1e3073ba8adb1ef2b669c6471.tar.gz",
+    sha256 = "641c62d698e88d838fc8076098645b72ae3dc0ecb791b75282d6618ac424f4b2",
+    strip_prefix = "boringssl-80692b63910ff9f3971412ea509449f73a114e18",
+    url = "https://github.com/google/boringssl/archive/80692b63910ff9f3971412ea509449f73a114e18.tar.gz",
 )
 
 http_archive(
