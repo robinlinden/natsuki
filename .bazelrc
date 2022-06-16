@@ -13,6 +13,8 @@ build --incompatible_disallow_empty_glob
 # Compiler configuration
 # =========================================================
 
+build --features=layering_check
+
 build:linux --cxxopt='-std=c++20'
 build:linux --copt='-Wall'
 build:linux --copt='-Wextra'
