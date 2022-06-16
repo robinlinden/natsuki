@@ -66,7 +66,10 @@ cc_library(
     name = "natsuki_pubsub",
     hdrs = glob(["natsuki_*.h"]),
     visibility = ["//visibility:public"],
-    deps = [":pubsub_interface"],
+    deps = [
+        ":pubsub_interface",
+        "//natsuki",
+    ],
 )
 
 # nats.c implementation
@@ -108,7 +111,6 @@ cc_binary(
         ":natsuki_pubsub",
         ":options",
         ":plain_text_reporter",
-        "//natsuki",
     ],
 )
 
@@ -125,6 +127,5 @@ cc_binary(
         ":natsc_pubsub",
         ":options",
         ":plain_text_reporter",
-        "//natsuki",
     ],
 )
