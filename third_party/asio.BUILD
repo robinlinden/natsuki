@@ -10,7 +10,10 @@ cc_library(
     defines = ["ASIO_SEPARATE_COMPILATION"],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
-    deps = ["@boringssl//:ssl"],
+    deps = [
+        "@boringssl//:ssl",
+        "@pthread",
+    ],
 )
 
 cc_library(
