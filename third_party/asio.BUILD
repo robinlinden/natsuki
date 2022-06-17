@@ -15,14 +15,3 @@ cc_library(
         "@pthread",
     ],
 )
-
-cc_library(
-    name = "header_only",
-    hdrs = glob([
-        "include/**/*.hpp",
-        "include/**/*.ipp",
-    ]),
-    defines = ["ASIO_HEADER_ONLY"],
-    strip_include_prefix = "include",
-    visibility = ["//visibility:public"],
-)
