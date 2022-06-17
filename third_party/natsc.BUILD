@@ -14,15 +14,8 @@ cc_library(
         "src/status.h",
         "src/version.h",
     ],
-    copts = select({
-        "@platforms//os:linux": ["-pthread"],
-        "@platforms//os:windows": [],
-    }),
-    linkopts = select({
-        "@platforms//os:linux": ["-pthread"],
-        "@platforms//os:windows": [],
-    }),
     local_defines = ["_GNU_SOURCE"],
     strip_include_prefix = "src",
     visibility = ["//visibility:public"],
+    deps = ["@pthread"],
 )
