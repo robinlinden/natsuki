@@ -30,9 +30,9 @@ http_archive(
 http_archive(
     name = "natsc",  # Apache-2.0
     build_file = "//third_party:natsc.BUILD",
-    sha256 = "16e700d912034faefb235a955bd920cfe4d449a260d0371b9694d722eb617ae1",
-    strip_prefix = "nats.c-3.3.0",
-    url = "https://github.com/nats-io/nats.c/archive/v3.3.0.tar.gz",
+    sha256 = "a41b4090ed943fcb6e84819d8dc8eae83fc52fb7f12b35a1c4454563ec56054d",
+    strip_prefix = "nats.c-3.4.0",
+    url = "https://github.com/nats-io/nats.c/archive/v3.4.0.tar.gz",
 )
 
 local_repository(
