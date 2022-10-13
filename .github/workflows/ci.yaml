@@ -1,7 +1,7 @@
 name: ci
 on: [pull_request, workflow_dispatch]
 env:
-  NATS_VERSION: v2.9.2
+  NATS_VERSION: v2.9.3
 jobs:
   linux-ci:
     name: ${{ matrix.name }}
