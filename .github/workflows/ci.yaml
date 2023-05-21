@@ -79,10 +79,9 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
       # Test the oldest supported CMake version.
       - run: pip install cmake==3.14.4.post1 && cmake --version
-      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
-      - run: cmake --build build
+      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-oldest-supported
+      - run: cmake --build build-oldest-supported
       # Test the newest supported CMake version.
-      - run: rm -rf build
       - run: pip install cmake==3.24.2 && cmake --version
-      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build
-      - run: cmake --build build
+      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-newest-supported
+      - run: cmake --build build-newest-supported
