@@ -5,7 +5,7 @@ env:
 jobs:
   linux-ci:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         include:
@@ -58,14 +58,14 @@ jobs:
       - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   buildifier:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: wget --output-document=buildifier https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-amd64 && sudo chmod +x buildifier
       - run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
 
   prettier:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: npm install --global prettier@2.8.0
@@ -73,7 +73,7 @@ jobs:
       - run: git diff --exit-code
 
   linux-cmake:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
