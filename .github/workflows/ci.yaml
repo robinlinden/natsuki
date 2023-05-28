@@ -12,7 +12,6 @@ jobs:
           - name: linux-gcc
             cc: gcc-10
             cxx: g++-10
-            bazel: --config gcc
           - name: linux-clang-asan
             cc: clang-12
             cxx: clang++-12

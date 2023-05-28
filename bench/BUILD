@@ -1,27 +1,32 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("//bzl:copts.bzl", "NATSUKI_COPTS")
 
 # Utils
 cc_library(
     name = "arg_parser",
     hdrs = ["arg_parser.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "options",
     hdrs = ["options.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "publish_result",
     hdrs = ["publish_result.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "subscribe_result",
     hdrs = ["subscribe_result.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -29,6 +34,7 @@ cc_library(
 cc_library(
     name = "ibenchmark_listener",
     hdrs = ["ibenchmark_listener.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":options",
@@ -40,6 +46,7 @@ cc_library(
 cc_library(
     name = "json_reporter",
     hdrs = ["json_reporter.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [":ibenchmark_listener"],
 )
@@ -47,6 +54,7 @@ cc_library(
 cc_library(
     name = "plain_text_reporter",
     hdrs = ["plain_text_reporter.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [":ibenchmark_listener"],
 )
@@ -58,6 +66,7 @@ cc_library(
         "ipublisher.h",
         "isubscriber.h",
     ],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
 )
 
@@ -65,6 +74,7 @@ cc_library(
 cc_library(
     name = "natsuki_pubsub",
     hdrs = glob(["natsuki_*.h"]),
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":pubsub_interface",
@@ -77,6 +87,7 @@ cc_library(
     name = "natsc_pubsub",
     srcs = glob(["natsc_*.cc"]),
     hdrs = glob(["natsc_*.h"]),
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":pubsub_interface",
@@ -89,6 +100,7 @@ cc_library(
     name = "lib",
     srcs = ["bench.cc"],
     hdrs = ["bench.h"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":ibenchmark_listener",
@@ -103,6 +115,7 @@ cc_library(
 cc_binary(
     name = "bench",
     srcs = ["main.cc"],
+    copts = NATSUKI_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":arg_parser",
@@ -118,6 +131,7 @@ cc_binary(
 cc_binary(
     name = "natsc",
     srcs = ["main.cc"],
+    copts = NATSUKI_COPTS,
     local_defines = ["NATSC_BENCH"],
     visibility = ["//visibility:public"],
     deps = [
