@@ -3,15 +3,15 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "asio",
     srcs = [
-        "src/asio.cpp",
-        # "src/asio_ssl.cpp",
+        "asio/src/asio.cpp",
+        # "asio/src/asio_ssl.cpp",
     ],
     hdrs = glob([
-        "include/**/*.hpp",
-        "include/**/*.ipp",
+        "asio/include/**/*.hpp",
+        "asio/include/**/*.ipp",
     ]),
     defines = ["ASIO_SEPARATE_COMPILATION"],
-    strip_include_prefix = "include",
+    strip_include_prefix = "asio/include",
     visibility = ["//visibility:public"],
     deps = [
         # "@boringssl//:ssl",

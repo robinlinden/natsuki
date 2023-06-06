@@ -16,8 +16,10 @@ build --incompatible_disallow_empty_glob
 build --features=layering_check
 
 build:linux --cxxopt='-std=c++20'
+build:linux --per_file_copt='bench[:/]@-Wno-null-dereference' # asio leaks this into our code.
 build:linux --per_file_copt='bench[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='bench[:/]@-Wno-shadow' # asio leaks this into our code.
+build:linux --per_file_copt='natsuki[:/]@-Wno-null-dereference' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki[:/]@-Wno-undef' # asio leaks this into our code.
 build:linux --per_file_copt='natsuki[:/]@-Wno-shadow' # asio leaks this into our code.
 
