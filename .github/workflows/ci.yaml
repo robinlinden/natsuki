@@ -45,23 +45,23 @@ jobs:
       # Check that ported dependencies' binaries and misc bits build.
       - run: bazel build @zenoh-pico//...
 
-  # Windows jobs are disabled until
+  # Windows jobs are stuck on windows-2019 until
   # https://github.com/actions/runner-images/issues/7662 is resolved.
-  # windows-msvc:
-  #   runs-on: windows-2022
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - run: bazel build ...
-  #     - run: |
-  #         curl --location https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-windows-amd64.tar.gz | tar -xvz
-  #         ./nats-server-$NATS_VERSION-windows-amd64/nats-server --debug >>nats.log 2>&1 &
-  #     - run: bazel test ... && cat nats.log && :>nats.log
-  #     - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
-  #     - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
-  #     - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+  windows-msvc:
+    runs-on: windows-2019
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+      - run: bazel build ...
+      - run: |
+          curl --location https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-windows-amd64.tar.gz | tar -xvz
+          ./nats-server-$NATS_VERSION-windows-amd64/nats-server --debug >>nats.log 2>&1 &
+      - run: bazel test ... && cat nats.log && :>nats.log
+      - run: bazel run natsuki:natsuki_example && cat nats.log && :>nats.log
+      - run: bazel run bench -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
+      - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   buildifier:
     runs-on: ubuntu-22.04
