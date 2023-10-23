@@ -88,6 +88,6 @@ jobs:
       - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-oldest-supported
       - run: cmake --build build-oldest-supported
       # Test the newest supported CMake version.
-      - run: pip install cmake==3.26.4 && cmake --version
+      - run: pip install cmake==3.27.7 && cmake --version
       - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-newest-supported
       - run: cmake --build build-newest-supported
