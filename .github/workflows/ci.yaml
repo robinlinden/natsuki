@@ -18,16 +18,16 @@ jobs:
             cc: gcc-10
             cxx: g++-10
           - name: linux-clang-asan
-            cc: clang-12
-            cxx: clang++-12
+            cc: clang-14
+            cxx: clang++-14
             bazel: --config asan
           - name: linux-clang-tsan
-            cc: clang-12
-            cxx: clang++-12
+            cc: clang-14
+            cxx: clang++-14
             bazel: --config tsan
           - name: linux-clang-ubsan
-            cc: clang-12
-            cxx: clang++-12
+            cc: clang-14
+            cxx: clang++-14
             bazel: --config ubsan
     steps:
       - uses: actions/checkout@v3
