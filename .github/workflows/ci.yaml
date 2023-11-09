@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 env:
-  NATS_VERSION: v2.9.19
+  NATS_VERSION: v2.10.5
 jobs:
   linux-ci:
     name: ${{ matrix.name }}
