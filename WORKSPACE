@@ -17,18 +17,18 @@ http_archive(
 http_archive(
     name = "asio",  # BSL-1.0
     build_file = "//third_party:asio.BUILD",
-    sha256 = "226438b0798099ad2a202563a83571ce06dd13b570d8fded4840dbc1f97fa328",
-    strip_prefix = "asio-asio-1-28-0",
-    url = "https://github.com/chriskohlhoff/asio/archive/asio-1-28-0.tar.gz",
+    sha256 = "5705a0e403017eba276625107160498518838064a6dd7fd8b00b2e30c0ffbdee",
+    strip_prefix = "asio-asio-1-28-2",
+    url = "https://github.com/chriskohlhoff/asio/archive/asio-1-28-2.tar.gz",
 )
 
 # boringssl//:ssl cheats and pulls in private includes from boringssl//:crypto.
 http_archive(
     name = "boringssl",  # OpenSSL + ISC
-    patch_cmds = ["sed -i '33i package(features=[\"-layering_check\"])' BUILD"],
-    sha256 = "62939a56062a3be7417a4e195c8bf0e7f07fdc26a9c49ef42ffd9b4030e3e921",
-    strip_prefix = "boringssl-3c13ec0a400cfe5a29c5e0726cecaa51d2bffcc9",
-    url = "https://github.com/google/boringssl/archive/3c13ec0a400cfe5a29c5e0726cecaa51d2bffcc9.tar.gz",
+    patch_cmds = ["""sed -i '33i package(features=["-layering_check"])' BUILD"""],
+    sha256 = "9db77d36cb2656808463ccf8f4c1c4a02b6a59c54fcde43d490d87be00b5b558",
+    strip_prefix = "boringssl-38314c88e85527ffc4ae0a7f642b6fd39777e0a9",
+    url = "https://github.com/google/boringssl/archive/38314c88e85527ffc4ae0a7f642b6fd39777e0a9.tar.gz",
 )
 
 http_archive(
@@ -41,9 +41,9 @@ http_archive(
 http_archive(
     name = "natsc",  # Apache-2.0
     build_file = "//third_party:natsc.BUILD",
-    sha256 = "4b60fd25bbb04dbc82ea09cd9e1df4f975f68e1b2e4293078ae14e01218a22bf",
-    strip_prefix = "nats.c-3.6.1",
-    url = "https://github.com/nats-io/nats.c/archive/v3.6.1.tar.gz",
+    sha256 = "6570e3c1be5d4d6040fd620d2318299e59045b7dc6c88d49c6168a3088d44ea2",
+    strip_prefix = "nats.c-3.7.0",
+    url = "https://github.com/nats-io/nats.c/archive/v3.7.0.tar.gz",
 )
 
 local_repository(
