@@ -10,35 +10,28 @@ env:
 jobs:
   linux-ci:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
           - name: linux-gcc
-            cc: gcc-10
-            cxx: g++-10
+            cc: gcc-14
+            cxx: g++-14
           - name: linux-clang-asan
-            cc: clang-14
-            cxx: clang++-14
+            cc: clang-18
+            cxx: clang++-18
             bazel: --config asan
           - name: linux-clang-tsan
-            cc: clang-14
-            cxx: clang++-14
+            cc: clang-18
+            cxx: clang++-18
             bazel: --config tsan
           - name: linux-clang-ubsan
-            cc: clang-14
-            cxx: clang++-14
+            cc: clang-18
+            cxx: clang++-18
             bazel: --config ubsan
     steps:
       - uses: actions/checkout@v3
       - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
-      # See: https://github.com/actions/runner-images/issues/8659
-      - name: Work around libstdc++ and Clang incompabilities
-        if: startsWith(matrix.cc, 'clang')
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
-          sudo apt-get update
-          sudo apt-get install --allow-downgrades libstdc++6=12.3.0-1ubuntu1~22.04 libgcc-s1=12.3.0-1ubuntu1~22.04
       - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local && echo "build -c opt" >>.bazelrc.local
       - run: bazel build ...
       - run: |
@@ -52,10 +45,8 @@ jobs:
       # Check that ported dependencies' binaries and misc bits build.
       - run: bazel build @zenoh-pico//...
 
-  # Windows jobs are stuck on windows-2019 until
-  # https://github.com/actions/runner-images/issues/7662 is resolved.
   windows-msvc:
-    runs-on: windows-2019
+    runs-on: windows-2025
     defaults:
       run:
         shell: bash
@@ -71,14 +62,14 @@ jobs:
       - run: bazel run bench:natsc -- --msgs 10000 --msgs-per-second 5000 --size 256 --pub 2 --sub 1 && cat nats.log && :>nats.log
 
   buildifier:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - run: wget --output-document=buildifier https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-amd64 && sudo chmod +x buildifier
       - run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
 
   prettier:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - run: npm install --global prettier@2.8.0
@@ -86,15 +77,15 @@ jobs:
       - run: git diff --exit-code
 
   linux-cmake:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
       # Test the oldest supported CMake version.
       - run: pip install cmake==3.14.4.post1 && cmake --version
-      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-oldest-supported
+      - run: CC=gcc-14 CXX=g++-14 cmake -Wdev -Werror=dev -S . -B build-oldest-supported
       - run: cmake --build build-oldest-supported
       # Test the newest supported CMake version.
       - run: pip install cmake==4.0.0 && cmake --version
-      - run: CC=gcc-10 CXX=g++-10 cmake -Wdev -Werror=dev -S . -B build-newest-supported
+      - run: CC=gcc-14 CXX=g++-14 cmake -Wdev -Werror=dev -S . -B build-newest-supported
       - run: cmake --build build-newest-supported
