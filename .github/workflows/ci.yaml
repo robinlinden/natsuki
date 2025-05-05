@@ -30,7 +30,7 @@ jobs:
             cxx: clang++-18
             bazel: --config ubsan
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: echo "CC=${{ matrix.cc }}" >>$GITHUB_ENV && echo "CXX=${{ matrix.cxx }}" >>$GITHUB_ENV
       - run: echo "build ${{ matrix.bazel }}" >.bazelrc.local && echo "build -c opt" >>.bazelrc.local
       - run: bazel build ...
@@ -51,7 +51,7 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: bazel build ...
       - run: |
           curl --location https://github.com/nats-io/nats-server/releases/download/$NATS_VERSION/nats-server-$NATS_VERSION-windows-amd64.tar.gz | tar -xvz
@@ -64,14 +64,14 @@ jobs:
   buildifier:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: wget --output-document=buildifier https://github.com/bazelbuild/buildtools/releases/download/5.1.0/buildifier-linux-amd64 && sudo chmod +x buildifier
       - run: ./buildifier --lint=warn --warnings=all -mode diff WORKSPACE $(find . -type f -iname "*.BUILD" -or -iname BUILD)
 
   prettier:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: npm install --global prettier@2.8.0
       - run: npx prettier --ignore-path .gitignore --write .
       - run: git diff --exit-code
@@ -79,7 +79,7 @@ jobs:
   linux-cmake:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install --no-install-recommends libasio-dev
       # Test the oldest supported CMake version.
       - run: pip install cmake==3.14.4.post1 && cmake --version
