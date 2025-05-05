@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 Robin Lindén <dev@robinlinden.eu>
+// SPDX-FileCopyrightText: 2022-2025 Robin Lindén <dev@robinlinden.eu>
 //
 // SPDX-License-Identifier: MIT
 
@@ -7,6 +7,7 @@
 
 #include "bench/ibenchmark_listener.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstddef>
 #include <iomanip>
