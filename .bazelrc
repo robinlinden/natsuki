@@ -1,6 +1,7 @@
 # Bazel configuration
 # =========================================================
 
+common --noenable_bzlmod
 build --enable_platform_specific_config
 test --test_output=errors
 
